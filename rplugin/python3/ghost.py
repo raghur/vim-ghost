@@ -80,10 +80,11 @@ class Ghost(object):
         self.httpserver.shutdown()
         self.nvim.command("echo 'Ghost server stopped'")
 
-    @neovim.function("GhostSend", sync=True)
+    @neovim.function("GhostSend")
     def ghostSend(self, args):
         print("in ghostSend", args)
         logging.info(args)
+        self.nvim.command("echo 'message from command %s'" % args)
 
 
     # @neovim.autocmd('BufEnter', pattern='*.py', eval='expand("<afile>")',
