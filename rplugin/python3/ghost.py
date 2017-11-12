@@ -80,8 +80,9 @@ class Ghost(object):
         self.httpserver.shutdown()
         self.nvim.command("echo 'Ghost server stopped'")
 
-    @neovim.function("ghostSend", sync=True)
+    @neovim.function("GhostSend", sync=True)
     def ghostSend(self, args):
+        print("in ghostSend", args)
         logging.info(args)
 
 
