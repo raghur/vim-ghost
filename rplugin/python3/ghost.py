@@ -21,14 +21,18 @@ class GhostWebSocketHandler(WebSocket):
         print(self.address, 'closed')
 
     def _onMessage(self, text):
-        tempfileHandle, tempfileName = mkstemp(suffix=".txt", text=True)
-        nvimObj.command("ed %s" % tempfileName)
-        nvimObj.current.buffer[:] = text.split("\n")
-        bufnr = nvimObj.current.buffer.number
-        aucmd = ("au TextChanged, TextChangedI <buffer> call"
-                          " ghostSend(%d)" % bufnr)
-        bufferHandlerMap[bufnr]=self
-        nvimObj.command(aucmd)
+        try:
+            tempfileHandle, tempfileName = mkstemp(suffix=".txt", text=True)
+            nvimObj.command("ed %s" % tempfileName)
+            nvimObj.current.buffer[:] = text.split("\n")
+            bufnr = nvimObj.current.buffer.number
+            aucmd = ("au TextChanged, TextChangedI <buffer> call"
+                     " GhostSend(%d)" % bufnr)
+            bufferHandlerMap[bufnr] = self
+            nvimObj.command(aucmd)
+        except Exception as ex:
+            logging.error("Caught exception handling message: %s", ex)
+            nvimObj.command("echo '%s'" % ex)
 
 def startWebSocketSvr(port):
     webSocketServer = SimpleWebSocketServer('', port, GhostWebSocketHandler)
@@ -84,7 +88,15 @@ class Ghost(object):
     def ghostSend(self, args):
         print("in ghostSend", args)
         logging.info(args)
+        bufnr = args[0]
         self.nvim.command("echo 'message from command %s'" % args)
+        if bufnr in bufferHandlerMap:
+            logging.info("sending message to client ")
+            wsclient = bufferHandlerMap[bufnr]
+            text = "\n".join(self.nvim.buffer[bufnr][:])
+            wsclient.sendMessage(text)
+        else:
+            logging.warning("Did not find buffer number %d in map", bufnr)
 
 
     # @neovim.autocmd('BufEnter', pattern='*.py', eval='expand("<afile>")',
