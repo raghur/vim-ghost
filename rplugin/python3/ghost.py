@@ -1,3 +1,4 @@
+import socket
 from http.server import HTTPServer, BaseHTTPRequestHandler
 from random import randint
 from threading import Thread
@@ -10,6 +11,7 @@ import neovim
 from neovim.api.nvim import NvimError
 
 buffer_handler_map = {}
+websocket_servers = []
 logger = logging.getLogger()
 logger.setLevel(logging.DEBUG)
 
@@ -42,6 +44,7 @@ def startWebSocketSvr(context, port):
                                          GhostWebSocketHandler)
     ws_thread = Thread(target=websocket_server.serveforever, daemon=True)
     ws_thread.start()
+    websocket_servers.append(websocket_server)
 
 
 class WebRequestHandler(BaseHTTPRequestHandler):
@@ -94,10 +97,15 @@ class Ghost(object):
         if not self.server_started:
             self.nvim.command("echo 'Server not running'")
             return
-        self.server_started = False
         self.httpserver.shutdown()
         self.httpserver.socket.close()
+        for server in websocket_servers:
+            logger.info("Shutting down websocket server on port: %d",
+                        server.serversocket.getsockname()[1])
+            server.close()
+        logger.info("Shutdown websockets and httpd")
         self.nvim.command("echo 'Ghost server stopped'")
+        self.server_started = False
 
     @neovim.function("GhostNotify")
     def ghostSend(self, args):
