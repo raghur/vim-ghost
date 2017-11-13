@@ -103,7 +103,8 @@ class Ghost(object):
             # self.nvim.command("echo '%s'" % text)
             wsclient.sendMessage(json.dumps(req))
         elif event == "closed":
-            logger.info("closing websocket")
+            logger.info(("Calling _handleOnWebSocketClose in response to buffer"
+                        " %d closure in nvim" % bufnr))
             self._handleOnWebSocketClose(wsclient)
 
     def _handleOnMessage(self, req, websocket):
@@ -111,6 +112,7 @@ class Ghost(object):
             if websocket in bufferHandlerMap:
                 # existing buffer
                 bufnr, fh = bufferHandlerMap[websocket]
+                logger.info("delete buffer changed autocmd")
                 self.nvim.command("au! TextChanged,TextChangedI <buffer=%d>" %
                                   bufnr)
                 self.nvim.buffers[bufnr][:] = req["text"].split("\n")
@@ -120,7 +122,7 @@ class Ghost(object):
                 self.nvim.command("ed %s" % tempfileName)
                 self.nvim.current.buffer[:] = req["text"].split("\n")
                 bufnr = self.nvim.current.buffer.number
-                deleteCmd = ("au BufDelete,BufUnload <buffer> call"
+                deleteCmd = ("au BufDelete <buffer> call"
                              " GhostNotify('closed', %d)" % bufnr)
                 bufferHandlerMap[bufnr] = [websocket, req]
                 bufferHandlerMap[websocket] = [bufnr, tempfileHandle]
@@ -141,6 +143,7 @@ class Ghost(object):
         return
 
     def _handleOnWebSocketClose(self, websocket):
+        logger.debug("Cleaning up before websocket close")
         if websocket not in bufferHandlerMap:
             logger.warn("websocket closed but no matching buffer found")
             return
