@@ -7,12 +7,13 @@ import logging
 import json
 import neovim
 bufferHandlerMap = {}
-nvimObj = None
+
+
 class GhostWebSocketHandler(WebSocket):
     def handleMessage(self):
         # echo message back to client
         logging.info("recd websocket message")
-        self._onMessage(self.data)
+        self.server.context.onMessage(self.data, self)
 
     def handleConnected(self):
         print(self.address, 'connected')
@@ -20,22 +21,14 @@ class GhostWebSocketHandler(WebSocket):
     def handleClose(self):
         print(self.address, 'closed')
 
-    def _onMessage(self, text):
-        try:
-            tempfileHandle, tempfileName = mkstemp(suffix=".txt", text=True)
-            nvimObj.command("ed %s" % tempfileName)
-            nvimObj.current.buffer[:] = text.split("\n")
-            bufnr = nvimObj.current.buffer.number
-            aucmd = ("au TextChanged, TextChangedI <buffer> call"
-                     " GhostSend(%d)" % bufnr)
-            bufferHandlerMap[bufnr] = self
-            nvimObj.command(aucmd)
-        except Exception as ex:
-            logging.error("Caught exception handling message: %s", ex)
-            nvimObj.command("echo '%s'" % ex)
 
-def startWebSocketSvr(port):
-    webSocketServer = SimpleWebSocketServer('', port, GhostWebSocketHandler)
+class MyWebSocketServer(SimpleWebSocketServer):
+    def __init__(self, context, *args, **kwargs):
+        self.context = context
+        SimpleWebSocketServer.__init__(self, *args, **kwargs)
+
+def startWebSocketSvr(context, port):
+    webSocketServer = MyWebSocketServer(context, '', port, GhostWebSocketHandler)
     wsThread = Thread(target=webSocketServer.serveforever, daemon=True)
     wsThread.start()
 
@@ -50,9 +43,13 @@ class WebRequestHandler(BaseHTTPRequestHandler):
         port = randint(60000, 65535)
         responseObj = {"ProtocolVersion": 1}
         responseObj["WebSocketPort"] = port
-        startWebSocketSvr(port)
+        startWebSocketSvr(self.server.context, port)
         self.wfile.write(json.dumps(responseObj).encode())
 
+class MyHTTPServer(HTTPServer):
+    def __init__(self, context, *args, **kwargs):
+        self.context = context
+        HTTPServer.__init__(self, *args, **kwargs)
 
 @neovim.plugin
 class Ghost(object):
@@ -69,7 +66,7 @@ class Ghost(object):
             logging.info("server already running")
             return
 
-        self.httpserver = HTTPServer(('', 4001), WebRequestHandler)
+        self.httpserver = MyHTTPServer(self, ('', 4001), WebRequestHandler)
         httpserverThread = Thread(target=self.httpserver.serve_forever, daemon=True)
         httpserverThread.start()
         self.serverStarted = True
@@ -93,12 +90,32 @@ class Ghost(object):
         if bufnr in bufferHandlerMap:
             logging.info("sending message to client ")
             wsclient = bufferHandlerMap[bufnr]
-            text = "\n".join(self.nvim.buffer[bufnr][:])
+            text = "\n".join(self.nvim.buffers[bufnr][:])
+            self.nvim.command("echo '%s'" % text)
             wsclient.sendMessage(text)
         else:
             logging.warning("Did not find buffer number %d in map", bufnr)
 
 
+    def _handleOnMessage(self, text, websocket):
+        try:
+            tempfileHandle, tempfileName = mkstemp(suffix=".txt", text=True)
+            self.nvim.command("ed %s" % tempfileName)
+            self.nvim.current.buffer[:] = text.split("\n")
+            bufnr = self.nvim.current.buffer.number
+            aucmd = ("au TextChanged,TextChangedI <buffer> call"
+                     " GhostSend(%d)" % bufnr)
+            bufferHandlerMap[bufnr] = websocket
+            self.nvim.command(aucmd)
+            logging.debug("Set up aucmd: %s", aucmd)
+        except Exception as ex:
+            logging.error("Caught exception handling message: %s", ex)
+            self.nvim.command("echo '%s'" % ex)
+
+    def onMessage(self, text, websocket):
+        self.nvim.async_call(self._handleOnMessage, text, websocket)
+        # self.nvim.command("echo 'connected direct'")
+        return
     # @neovim.autocmd('BufEnter', pattern='*.py', eval='expand("<afile>")',
     #                 sync=True)
     # def autocmd_handler(self, filename):
