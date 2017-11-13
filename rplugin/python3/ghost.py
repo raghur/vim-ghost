@@ -6,6 +6,7 @@ from tempfile import mkstemp
 import logging
 import json
 import neovim
+from neovim.api.nvim import NvimError
 import os
 bufferHandlerMap = {}
 logger = logging.getLogger()
@@ -103,24 +104,33 @@ class Ghost(object):
             wsclient.sendMessage(json.dumps(req))
         elif event == "closed":
             logger.info("closing websocket")
-            wsclient.close()
+            self._handleOnWebSocketClose(wsclient)
 
     def _handleOnMessage(self, req, websocket):
         try:
-            tempfileHandle, tempfileName = mkstemp(suffix=".txt", text=True)
-            self.nvim.command("ed %s" % tempfileName)
-            self.nvim.current.buffer[:] = req["text"].split("\n")
-            bufnr = self.nvim.current.buffer.number
+            if websocket in bufferHandlerMap:
+                # existing buffer
+                bufnr, fh = bufferHandlerMap[websocket]
+                self.nvim.command("au! TextChanged,TextChangedI <buffer=%d>" %
+                                  bufnr)
+                self.nvim.buffers[bufnr][:] = req["text"].split("\n")
+            else:
+                # new client
+                tempfileHandle, tempfileName = mkstemp(suffix=".txt", text=True)
+                self.nvim.command("ed %s" % tempfileName)
+                self.nvim.current.buffer[:] = req["text"].split("\n")
+                bufnr = self.nvim.current.buffer.number
+                deleteCmd = ("au BufDelete,BufUnload <buffer> call"
+                             " GhostNotify('closed', %d)" % bufnr)
+                bufferHandlerMap[bufnr] = [websocket, req]
+                bufferHandlerMap[websocket] = [bufnr, tempfileHandle]
+                self.nvim.command(deleteCmd)
+                logger.debug("Set up aucmd: %s", deleteCmd)
+
             changeCmd = ("au TextChanged,TextChangedI <buffer> call"
                          " GhostNotify('text_changed', %d)" % bufnr)
-            deleteCmd = ("au BufDelete,BufUnload <buffer> call"
-                         " GhostNotify('closed', %d)" % bufnr)
-            bufferHandlerMap[bufnr] = [websocket, req]
-            bufferHandlerMap[websocket] = [bufnr, tempfileHandle]
             self.nvim.command(changeCmd)
-            self.nvim.command(deleteCmd)
             logger.debug("Set up aucmd: %s", changeCmd)
-            logger.debug("Set up aucmd: %s", deleteCmd)
         except Exception as ex:
             logger.error("Caught exception handling message: %s", ex)
             self.nvim.command("echo '%s'" % ex)
@@ -137,11 +147,19 @@ class Ghost(object):
 
         bufnr, fh = bufferHandlerMap[websocket]
         bufFilename = self.nvim.buffers[bufnr].name
-        self.nvim.command("bdelete! %d" % bufnr)
-        os.close(fh)
-        os.remove(bufFilename)
-        logger.debug("Deleted file %s and removed buffer %d", bufFilename,
-                     bufnr)
+        try:
+            self.nvim.command("bdelete! %d" % bufnr)
+        except NvimError as nve:
+            logger.error("Error while deleting buffer %s", nve)
+
+        try:
+            os.close(fh)
+            os.remove(bufFilename)
+            logger.debug("Deleted file %s and removed buffer %d", bufFilename,
+                         bufnr)
+        except OSError as ose:
+            logger.error("Error while closing & deleting file %s", ose)
+
         bufferHandlerMap.pop(bufnr, None)
         bufferHandlerMap.pop(websocket, None)
         websocket.close()
