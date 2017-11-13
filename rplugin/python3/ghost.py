@@ -96,6 +96,7 @@ class Ghost(object):
             return
         self.server_started = False
         self.httpserver.shutdown()
+        self.httpserver.socket.close()
         self.nvim.command("echo 'Ghost server stopped'")
 
     @neovim.function("GhostNotify")
