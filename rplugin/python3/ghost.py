@@ -6,6 +6,7 @@ from tempfile import mkstemp
 import logging
 import json
 import neovim
+import os
 bufferHandlerMap = {}
 logger = logging.getLogger()
 logger.setLevel(logging.DEBUG)
@@ -21,6 +22,7 @@ class GhostWebSocketHandler(WebSocket):
 
     def handleClose(self):
         print(self.address, 'closed')
+        self.server.context.onWebSocketClose(self)
 
 
 class MyWebSocketServer(SimpleWebSocketServer):
@@ -113,6 +115,7 @@ class Ghost(object):
             deleteCmd = ("au BufDelete,BufUnload <buffer> call"
                          " GhostNotify('closed', %d)" % bufnr)
             bufferHandlerMap[bufnr] = [websocket, req]
+            bufferHandlerMap[websocket] = [bufnr, tempfileHandle]
             self.nvim.command(changeCmd)
             self.nvim.command(deleteCmd)
             logger.debug("Set up aucmd: %s", changeCmd)
@@ -125,4 +128,24 @@ class Ghost(object):
         self.nvim.async_call(self._handleOnMessage, req, websocket)
         # self.nvim.command("echo 'connected direct'")
         return
+
+    def _handleOnWebSocketClose(self, websocket):
+        if websocket not in bufferHandlerMap:
+            logger.warn("websocket closed but no matching buffer found")
+            return
+
+        bufnr, fh = bufferHandlerMap[websocket]
+        bufFilename = self.nvim.buffers[bufnr].name
+        self.nvim.command("bdelete! %d" % bufnr)
+        os.close(fh)
+        os.remove(bufFilename)
+        logger.debug("Deleted file %s and removed buffer %d", bufFilename,
+                     bufnr)
+        bufferHandlerMap.pop(bufnr, None)
+        bufferHandlerMap.pop(websocket, None)
+        websocket.close()
+        logger.debug("Websocket closed")
+
+    def onWebSocketClose(self, websocket):
+        self.nvim.async_call(self._handleOnWebSocketClose, websocket)
 
