@@ -15,8 +15,10 @@ logger.setLevel(logging.DEBUG)
 
 class GhostWebSocketHandler(WebSocket):
     def handleMessage(self):
-        logger.info("recd websocket message")
-        self.server.context.onMessage(json.loads(self.data), self)
+        req = json.loads(self.data)
+        logger.info("recd on websocket: %s message: %s",
+                    self.address, req["text"])
+        self.server.context.onMessage(req, self)
 
     def handleConnected(self):
         print(self.address, 'connected')
