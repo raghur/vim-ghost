@@ -21,10 +21,10 @@ class GhostWebSocketHandler(WebSocket):
         self.server.context.onMessage(req, self)
 
     def handleConnected(self):
-        print(self.address, 'connected')
+        logger.debug("Websocket connected %s", self.address)
 
     def handleClose(self):
-        print(self.address, 'closed')
+        logger.debug("Websocket closed event %s ", self.address)
         self.server.context.onWebSocketClose(self)
 
 
@@ -91,7 +91,6 @@ class Ghost(object):
 
     @neovim.function("GhostNotify")
     def ghostSend(self, args):
-        print("in ghostSend", args)
         logger.info(args)
         event, bufnr = args
         if bufnr not in bufferHandlerMap:
@@ -106,7 +105,7 @@ class Ghost(object):
             wsclient.sendMessage(json.dumps(req))
         elif event == "closed":
             logger.info(("Calling _handleOnWebSocketClose in response to buffer"
-                        " %d closure in nvim" % bufnr))
+                         " %d closure in nvim" % bufnr))
             self._handleOnWebSocketClose(wsclient)
 
     def _handleOnMessage(self, req, websocket):
