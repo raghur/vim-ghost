@@ -7,14 +7,14 @@ import logging
 import json
 import neovim
 bufferHandlerMap = {}
+logger = logging.getLogger()
+logger.setLevel(logging.DEBUG)
 
 
 class GhostWebSocketHandler(WebSocket):
     def handleMessage(self):
-        # echo message back to client
-        logging.info("recd websocket message")
+        logger.info("recd websocket message")
         self.server.context.onMessage(json.loads(self.data), self)
-        self.sendMessage("recd text")
 
     def handleConnected(self):
         print(self.address, 'connected')
@@ -60,21 +60,20 @@ class MyHTTPServer(HTTPServer):
 class Ghost(object):
     def __init__(self, vim):
         self.nvim = vim
-        logging.basicConfig(level=logging.DEBUG)
         self.serverStarted = False
 
     @neovim.command('GhostStart', range='', nargs='0', sync=True)
     def server_start(self, args, range):
         if self.serverStarted:
             self.nvim.command("echo 'Ghost server already running'")
-            logging.info("server already running")
+            logger.info("server already running")
             return
 
         self.httpserver = MyHTTPServer(self, ('', 4001), WebRequestHandler)
         httpserverThread = Thread(target=self.httpserver.serve_forever, daemon=True)
         httpserverThread.start()
         self.serverStarted = True
-        logging.info("server started")
+        logger.info("server started")
         self.nvim.command("echo 'Ghost server started'")
 
     @neovim.command('GhostStop', range='', nargs='0', sync=True)
@@ -85,21 +84,23 @@ class Ghost(object):
         self.httpserver.shutdown()
         self.nvim.command("echo 'Ghost server stopped'")
 
-    @neovim.function("GhostSend")
+    @neovim.function("GhostNotify")
     def ghostSend(self, args):
         print("in ghostSend", args)
-        logging.info(args)
-        bufnr = args[0]
-        self.nvim.command("echo 'message from command %s'" % args)
+        logger.info(args)
+        event, bufnr = args
         if bufnr in bufferHandlerMap:
-            logging.info("sending message to client ")
             wsclient, req = bufferHandlerMap[bufnr]
+        self.nvim.command("echo 'event recd command %s, %s'" % (event, bufnr))
+        if event == "text_changed":
+            logger.info("sending message to client ")
             text = "\n".join(self.nvim.buffers[bufnr][:])
             req["text"] = text
             # self.nvim.command("echo '%s'" % text)
             wsclient.sendMessage(json.dumps(req))
-        else:
-            logging.warning("Did not find buffer number %d in map", bufnr)
+        elif event == "closed":
+            logger.info("closing websocket")
+            wsclient.close()
 
     def _handleOnMessage(self, req, websocket):
         try:
@@ -107,13 +108,17 @@ class Ghost(object):
             self.nvim.command("ed %s" % tempfileName)
             self.nvim.current.buffer[:] = req["text"].split("\n")
             bufnr = self.nvim.current.buffer.number
-            aucmd = ("au TextChanged,TextChangedI <buffer> call"
-                     " GhostSend(%d)" % bufnr)
+            changeCmd = ("au TextChanged,TextChangedI <buffer> call"
+                         " GhostNotify('text_changed', %d)" % bufnr)
+            deleteCmd = ("au BufDelete,BufUnload <buffer> call"
+                         " GhostNotify('closed', %d)" % bufnr)
             bufferHandlerMap[bufnr] = [websocket, req]
-            self.nvim.command(aucmd)
-            logging.debug("Set up aucmd: %s", aucmd)
+            self.nvim.command(changeCmd)
+            self.nvim.command(deleteCmd)
+            logger.debug("Set up aucmd: %s", changeCmd)
+            logger.debug("Set up aucmd: %s", deleteCmd)
         except Exception as ex:
-            logging.error("Caught exception handling message: %s", ex)
+            logger.error("Caught exception handling message: %s", ex)
             self.nvim.command("echo '%s'" % ex)
 
     def onMessage(self, req, websocket):
