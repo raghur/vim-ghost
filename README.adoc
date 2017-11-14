@@ -1,0 +1,42 @@
+= (N)Vim Ghost
+
+Edit browser textarea content in Neovim!
+
+. Install this https://addons.mozilla.org/en-US/firefox/addon/ghosttext/[firefox addon] or this https://chrome.google.com/webstore/detail/ghosttext/godiecgffnchndlihlpaajjcplehddca[Chrome extension]
+. Add this plugin 
++
+```
+" Vim-plug
+Plug 'raghur/vim-ghost'
+```
+. Ensure you have a neovim instance open. Run `:GhostStart` to start the server.
+. On any textara, click the ghost icon - switch to neovim and edit!. Content is sync'ed real time. Works both ways - edits in the browser window are pushed to neovim as well.
+. When done, just delete the buffer with `:bd!` - you'll be disconnected
+
+== Requirements
+
+* Recent neovim
+* Python 3.4+
+* Python plugin host - `python3 -c 'import neovim'` should not error
+* Install python websocket server `sudo pip install git+https://github.com/dpallot/simple-websocket-server.git`
+** If you don't want to install system wide, then just pass `--user` in the command above.
+
+== Rationale
+
+With Firefox moving to webextensions, *It's all text* is dead. Typing in text areas is a royal PITA and I was looking for a replacement. Came across GhostText - but the vim addon seems dead and uses tcl :ugh:
+
+My vimscript fu is pretty limited - so I thought I'd write a python plugin for neovim.
+
+*PS: I know the repo name of vim-ghost is misleading.*
+
+== TODOS
+
+PR's welcome. Some areas:
+
+- install dependencies automatically
+- py2 support
+- vim compatibility
+
+Love it or just find it as useful as I do? Star this repo to let me know
+
+
