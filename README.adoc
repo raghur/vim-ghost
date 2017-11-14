@@ -2,6 +2,9 @@
 
 Edit browser textarea content in Neovim!
 
+[.center.text-center]
+image::https://i.imgur.com/yitnBrU.gif[demo,100%]
+
 . Install this https://addons.mozilla.org/en-US/firefox/addon/ghosttext/[firefox addon] or this https://chrome.google.com/webstore/detail/ghosttext/godiecgffnchndlihlpaajjcplehddca[Chrome extension]
 . Add this plugin 
 +
