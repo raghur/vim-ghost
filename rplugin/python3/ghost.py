@@ -1,4 +1,3 @@
-import socket
 from http.server import HTTPServer, BaseHTTPRequestHandler
 from random import randint
 from threading import Thread
@@ -22,14 +21,14 @@ class GhostWebSocketHandler(WebSocket):
         req = json.loads(self.data)
         logger.info("recd on websocket: %s message: %s",
                     self.address, req["text"])
-        self.server.context.onMessage(req, self)
+        self.server.context.on_message(req, self)
 
     def handleConnected(self):
         logger.debug("Websocket connected %s", self.address)
 
     def handleClose(self):
         logger.debug("Websocket closed event %s ", self.address)
-        self.server.context.onWebSocketClose(self)
+        self.server.context.on_websocket_close(self)
 
 
 class MyWebSocketServer(SimpleWebSocketServer):
@@ -108,7 +107,7 @@ class Ghost(object):
         self.server_started = False
 
     @neovim.function("GhostNotify")
-    def ghostSend(self, args):
+    def ghost_notify(self, args):
         logger.info(args)
         event, bufnr = args
         if bufnr not in buffer_handler_map:
@@ -159,7 +158,7 @@ class Ghost(object):
             logger.error("Caught exception handling message: %s", ex)
             self.nvim.command("echo '%s'" % ex)
 
-    def onMessage(self, req, websocket):
+    def on_message(self, req, websocket):
         self.nvim.async_call(self._handle_on_message, req, websocket)
         # self.nvim.command("echo 'connected direct'")
         return
@@ -167,11 +166,11 @@ class Ghost(object):
     def _handle_web_socket_close(self, websocket):
         logger.debug("Cleaning up on websocket close")
         if websocket not in buffer_handler_map:
-            logger.warn("websocket closed but no matching buffer found")
+            logger.warning("websocket closed but no matching buffer found")
             return
 
         bufnr, fh = buffer_handler_map[websocket]
-        bufFilename = self.nvim.buffers[bufnr].name
+        buf_file = self.nvim.buffers[bufnr].name
         try:
             self.nvim.command("bdelete! %d" % bufnr)
         except NvimError as nve:
@@ -179,8 +178,8 @@ class Ghost(object):
 
         try:
             os.close(fh)
-            os.remove(bufFilename)
-            logger.debug("Deleted file %s and removed buffer %d", bufFilename,
+            os.remove(buf_file)
+            logger.debug("Deleted file %s and removed buffer %d", buf_file,
                          bufnr)
         except OSError as ose:
             logger.error("Error while closing & deleting file %s", ose)
@@ -190,5 +189,5 @@ class Ghost(object):
         websocket.close()
         logger.debug("Websocket closed")
 
-    def onWebSocketClose(self, websocket):
+    def on_websocket_close(self, websocket):
         self.nvim.async_call(self._handle_web_socket_close, websocket)
