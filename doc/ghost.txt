@@ -1,0 +1,68 @@
+*ghost.txt* documentation for vim-ghost
+  ____ _               _  _____         _      __            
+ / ___| |__   ___  ___| ||_   _|____  _| |_   / _| ___  _ __  ~
+| |  _| '_ \ / _ \/ __| __|| |/ _ \ \/ / __| | |_ / _ \| '__| ~
+| |_| | | | | (_) \__ \ |_ | |  __/>  <| |_  |  _| (_) | |    ~
+ \____|_| |_|\___/|___/\__||_|\___/_/\_\\__| |_|  \___/|_|    ~
+                                                              ~
+                 _   _       _                                ~
+                | \ | |_   _(_)_ __ ___                       ~
+                |  \| \ \ / / | '_ ` _ \                      ~
+                | |\  |\ V /| | | | | | |                     ~
+                |_| \_| \_/ |_|_| |_| |_|                     ~
+
+
+                Edit browser text in (N)vim
+
+================================================================================
+CONTENTS                                                        *ghostcontents*
+    
+    1. Introduction................................|GhostIntro|
+    2. Usage.......................................|GhostUsage|
+    3. Configuration...............................|GhostConfiguration|
+    4. Contributing................................|GhostContributing|
+    5. Bugs........................................|GhostBugs|
+    6. Changelog...................................|GhostChangelog|
+    7. Credits.....................................|GhostCredits|
+
+================================================================================
+Introduction                                                        *GhostIntro*
+
+Ghost is a plugin for nvim that lets you edit textareas and other large text
+content editable areas in nvim and constantly syncs between the browser and nvim
+buffer bi-directionally.
+
+================================================================================
+Usage                                                               *GhostUsage*
+
+1. Start ghost - :GhostStart
+2. Shutdown ghost - :GhostStop
+
+================================================================================
+Configuration                                               *GhostConfiguration*
+
+There's very little to configure - if you need to change the port of the ghost
+server endpoint, then set g:ghost_port
+
+    let g:ghost_port = 5678
+================================================================================
+Contributing                                                 *GhostContributing*
+
+This is how  you can contribute to Ghost
+
+================================================================================
+Bugs                                                                 *GhostBugs*
+
+File them here
+
+================================================================================
+Changelog                                                       *GhostChangelog*
+
+First version
+
+================================================================================
+Credits                                                           *GhostCredits*
+
+Big thanks to GhostText and neovim
+
+
