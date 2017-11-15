@@ -32,33 +32,53 @@ Ghost is a plugin for nvim that lets you edit textareas and other large text
 content editable areas in nvim and constantly syncs between the browser and nvim
 buffer bi-directionally.
 
+There are two parts
+
+1. Browser addon
+    - For Firefox -https://addons.mozilla.org/en-US/firefox/addon/ghosttext/ 
+    - For Chrome - https://chrome.google.com/webstore/detail/ghosttext/godiecgffnchndlihlpaajjcplehddca
+2. This nvim plugin
+
+The nvim plugin starts a webserver (by default on port 4001) and then listens for 
+connections from the browser. For each connection, it starts a websocket listener
+and then uses that to send and receive text to and from the browser.
+
 ================================================================================
 Usage                                                               *GhostUsage*
 
-1. Start ghost - :GhostStart
-2. Shutdown ghost - :GhostStop
+Install this plugin using your favorite plugin manager. For ex: for vim-plug,
+
+    Plug 'raghur/vim-ghost'
+
+Start the server with :GhostStart. That's it.
+
+For completeness, you can shutdown the server with :GhostStop
 
 ================================================================================
 Configuration                                               *GhostConfiguration*
 
-There's very little to configure - if you need to change the port of the ghost
-server endpoint, then set g:ghost_port
+There's very little to configure.If you need to change the port on which the
+server listens, then set g:ghost_port (defaults to 4001 if unset)
 
     let g:ghost_port = 5678
+
 ================================================================================
 Contributing                                                 *GhostContributing*
 
-This is how  you can contribute to Ghost
+https://github.com/raghur/vim-ghost is the main repo. Feel free to file issues,
+suggestions and questions. If you like this plugin, do star the repo and spread
+the word. 
+Pull requests are very welcome!
 
 ================================================================================
 Bugs                                                                 *GhostBugs*
 
-File them here
+Please use github issues to file bugs
 
 ================================================================================
 Changelog                                                       *GhostChangelog*
 
-First version
+v0.9 - First public version.
 
 ================================================================================
 Credits                                                           *GhostCredits*
