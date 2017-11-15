@@ -75,21 +75,29 @@ class Ghost(object):
     def __init__(self, vim):
         self.nvim = vim
         self.server_started = False
+        self.port = 4001
 
     @neovim.command('GhostStart', range='', nargs='0', sync=True)
     def server_start(self, args, range):
         if self.server_started:
-            self.nvim.command("echo 'Ghost server already running'")
-            logger.info("server already running")
+            self.nvim.command("echo 'Ghost server running on port %d'" %
+                              self.port)
+            logger.info("server already running on port %d", self.port)
             return
 
-        self.httpserver = MyHTTPServer(self, ('', 4001), WebRequestHandler)
+        if self.nvim.funcs.exists("g:ghost_port") == 1:
+            self.port = self.nvim.api.get_var("ghost_port")
+        else:
+            self.nvim.api.set_var("ghost_port", self.port)
+
+        self.httpserver = MyHTTPServer(self, ('', self.port),
+                                       WebRequestHandler)
         http_server_thread = Thread(target=self.httpserver.serve_forever,
                                     daemon=True)
         http_server_thread.start()
         self.server_started = True
         logger.info("server started")
-        self.nvim.command("echo 'Ghost server started'")
+        self.nvim.command("echo 'Ghost server started on port %d'" % self.port)
 
     @neovim.command('GhostStop', range='', nargs='0', sync=True)
     def server_stop(self, args, range):
