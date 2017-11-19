@@ -54,6 +54,14 @@ Start the server with :GhostStart. That's it.
 
 For completeness, you can shutdown the server with :GhostStop
 
+If you'd like to start Ghost on nvim startup, then use this:
+
+    let timer = timer_start(500,
+                \ { -> execute("GhostStart") })
+
+Yes - that's a little more complicated that it needs to be (GhostStart)
+and I'm working on it.
+
 ================================================================================
 Configuration                                               *GhostConfiguration*
 
