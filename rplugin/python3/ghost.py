@@ -99,7 +99,8 @@ class Ghost(object):
         http_server_thread.start()
         self.server_started = True
         logger.info("server started")
-        self.nvim.command("echo 'Ghost server started on port %d'" % self.port)
+        self.nvim.command("echom 'Ghost server started on port %d'"
+                          % self.port)
 
     @neovim.command('GhostStop', range='', nargs='0', sync=True)
     def server_stop(self, args, range):
@@ -113,7 +114,7 @@ class Ghost(object):
                         server.serversocket.getsockname()[1])
             server.close()
         logger.info("Shutdown websockets and httpd")
-        self.nvim.command("echo 'Ghost server stopped'")
+        self.nvim.command("echom 'Ghost server stopped'")
         self.server_started = False
 
     @neovim.function("GhostNotify")
