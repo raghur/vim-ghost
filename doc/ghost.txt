@@ -78,7 +78,13 @@ Pull requests are very welcome!
 ================================================================================
 Bugs                                                                 *GhostBugs*
 
-Please use github issues to file bugs
+Please use github issues to file bugs. This is a python plugin - so additional
+logging can be enabled like so:
+
+    $ NVIM_PYTHON_LOGFILE=~/pylog NVIM_GHOSTPY_LOGLEVEL=DEBUG nvim
+
+Now you should see debug logs in ~/pylog_py3_rplugin file. If you have a bug to 
+report then it would be very helpful to attach logs along with (or in a paste)
 
 ================================================================================
 Changelog                                                       *GhostChangelog*
