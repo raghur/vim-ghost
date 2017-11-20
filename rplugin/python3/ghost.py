@@ -121,7 +121,7 @@ class Ghost(object):
         if bufnr not in buffer_handler_map:
             return
         wsclient, req = buffer_handler_map[bufnr]
-        self.nvim.command("echo 'event recd command %s, %s'" % (event, bufnr))
+        logger.debug('event recd: %s, buffer: %d', event, bufnr)
         if event == "text_changed":
             logger.info("sending message to client ")
             text = "\n".join(self.nvim.buffers[bufnr][:])
