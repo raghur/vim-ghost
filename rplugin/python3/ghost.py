@@ -12,7 +12,7 @@ from neovim.api.nvim import NvimError
 buffer_handler_map = {}
 websocket_servers = []
 logger = logging.getLogger()
-NVIM_GHOSTPY_LOGLEVEL = 'NVIM_GHOSTPY_LOGLEVEL'
+NVIM_GHOSTPY_LOGLEVEL = 'NVIM_GHOSTPY_LOG_LEVEL'
 loglevelstr = os.environ.get(NVIM_GHOSTPY_LOGLEVEL, "WARNING")
 logger.setLevel(logging.getLevelName(loglevelstr))
 
