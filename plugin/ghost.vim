@@ -1,11 +1,11 @@
 let s:install_path=expand('<sfile>:p:h:h')
-function GhostInstallDepsfn()
+function! GhostInstallDepsfn()
     let cmd = ['pip3', 'install', '--user', '-r', s:install_path . '/requirements.txt']
     echom "Running: " . join(cmd, " ")
     call system(cmd)
     echom "ghost dependencies installed."
 endfunction
-command -nargs=0 GhostInstallDeps call GhostInstallDepsfn()
+command! -nargs=0 GhostInstallDeps call GhostInstallDepsfn()
 
 function s:loadGhost()
     if !has("nvim")
