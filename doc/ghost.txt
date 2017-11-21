@@ -75,7 +75,7 @@ Contributing                                                 *GhostContributing*
 
 https://github.com/raghur/vim-ghost is the main repo. Feel free to file issues,
 suggestions and questions. If you like this plugin, do star the repo and spread
-the word. 
+the word.
 Pull requests are very welcome!
 
 ================================================================================
