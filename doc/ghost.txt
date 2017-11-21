@@ -48,16 +48,14 @@ Usage                                                               *GhostUsage*
 
 Install this plugin using your favorite plugin manager. For ex: for vim-plug,
 
-    Plug 'raghur/vim-ghost', {'do': 'GhostInstallDepsfn'}
+    Plug 'raghur/vim-ghost', {'do': './install'}
 
 Start the server with :GhostStart. That's it.
 
-The `GhostInstallDepsfn` is a function that runs 
-`pip install --user -r requirements.txt` in the plugin folder to install 
-required python dependencies. You can manually run this with a command as well
-`GhostInstallDeps`
+The `./install` is a script that runs `pip install --user -r requirements.txt` 
+in the plugin folder to install required python dependencies.
 
-For completeness, you can shutdown the server with :GhostStop
+You can shutdown the server with :GhostStop
 
 
 ================================================================================
