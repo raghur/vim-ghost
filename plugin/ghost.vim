@@ -7,7 +7,7 @@
 " endfunction
 " command! -nargs=0 GhostInstallDeps call GhostInstallDepsfn()
 
-function s:loadGhost()
+function! s:loadGhost()
     if !has("nvim")
         return
     endif
