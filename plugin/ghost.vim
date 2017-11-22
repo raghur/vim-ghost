@@ -6,6 +6,11 @@
 "     echom "ghost dependencies installed."
 " endfunction
 " command! -nargs=0 GhostInstallDeps call GhostInstallDepsfn()
+if exists("g:loaded_ghost")
+    finish
+endif
+
+let g:loaded_ghost = 1
 
 function! s:loadGhost()
     if !has("nvim")
