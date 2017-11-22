@@ -47,7 +47,7 @@ and then uses that to send and receive text to and from the browser.
 Usage                                                               *GhostUsage*
 
 Install this plugin using your favorite plugin manager. For ex: for vim-plug,
-
+>
     Plug 'raghur/vim-ghost', {'do': './install'}
 
 Start the server with :GhostStart. That's it.
@@ -63,11 +63,11 @@ Configuration                                               *GhostConfiguration*
 
 There's very little to configure. If you need to change the port on which the
 server listens, then set g:ghost_port (defaults to 4001 if unset)
-
+>
     let g:ghost_port = 5678
 
 If you'd like to start Ghost on nvim startup, then add this to your .vimrc
-
+>
     let g:ghost_autostart=1
 
 ================================================================================
@@ -83,7 +83,7 @@ Bugs                                                                 *GhostBugs*
 
 Please use github issues to file bugs. This is a python plugin - so additional
 logging can be enabled like so:
-
+>
     $ NVIM_PYTHON_LOG_FILE=~/pylog NVIM_GHOSTPY_LOG_LEVEL=DEBUG nvim
 
 Now you should see debug logs in ~/pylog_py3_rplugin file. If you have a bug to 
