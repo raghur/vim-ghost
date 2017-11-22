@@ -149,7 +149,8 @@ class Ghost(object):
                 self.nvim.buffers[bufnr][:] = req["text"].split("\n")
             else:
                 # new client
-                temp_file_handle, temp_file_name = mkstemp(suffix=".txt",
+                temp_file_handle, temp_file_name = mkstemp(prefix="tmp_ghost_",
+                                                           suffix=".txt",
                                                            text=True)
                 self.nvim.command("ed %s" % temp_file_name)
                 self.nvim.current.buffer[:] = req["text"].split("\n")
