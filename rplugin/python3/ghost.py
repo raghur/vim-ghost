@@ -82,8 +82,8 @@ class Ghost(object):
     @neovim.command('GhostStart', range='', nargs='0')
     def server_start(self, args, range):
         if self.server_started:
-            self.nvim.command("echo 'Ghost server running on port %d'" %
-                              self.port)
+            self.nvim.command("echo 'Ghost server already running on port %d'"
+                              % self.port)
             logger.info("server already running on port %d", self.port)
             return
 
