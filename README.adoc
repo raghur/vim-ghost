@@ -10,7 +10,7 @@ image::https://i.imgur.com/yitnBrU.gif[demo,100%]
 +
 ```
 " Vim-plug
-Plug 'raghur/vim-ghost', {'do': './install'}
+Plug 'raghur/vim-ghost', {'do': ':GhostInstall'}
 ```
 . Ensure you have a neovim instance open. Run `:GhostStart` to start the server.
 . On any textara, click the ghost icon - switch to neovim and edit!. Content is sync'ed real time. Works both ways - edits in the browser window are pushed to neovim as well.

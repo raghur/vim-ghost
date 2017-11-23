@@ -48,7 +48,7 @@ Usage                                                               *GhostUsage*
 
 Install this plugin using your favorite plugin manager. For ex: for vim-plug,
 >
-    Plug 'raghur/vim-ghost', {'do': './install'}
+    Plug 'raghur/vim-ghost', {'do': ':GhostInstall'}
 
 Start the server with :GhostStart. That's it.
 
