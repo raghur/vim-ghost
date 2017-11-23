@@ -11,7 +11,7 @@ function! s:installGhost()
 endfunction
 command! -nargs=0 GhostInstall call s:installGhost()
 
-function! s:startGhost()
+function! s:startGhost(tid)
     " during first installation, neovim has to be restarted after
     " :UpdateRemotePlugins
     if !exists(":GhostStart")
