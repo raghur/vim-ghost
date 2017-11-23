@@ -1,16 +1,14 @@
-" let s:install_path=expand('<sfile>:p:h:h')
-" function! GhostInstallDepsfn()
-"     let cmd = ['pip3', 'install', '--user', '-r', s:install_path . '/requirements.txt']
-"     echom "Running: " . join(cmd, " ")
-"     call system(cmd)
-"     echom "ghost dependencies installed."
-" endfunction
-" command! -nargs=0 GhostInstallDeps call GhostInstallDepsfn()
 if exists("g:loaded_ghost")
     finish
 endif
 
 let g:loaded_ghost = 1
+
+function! s:installGhost()
+    let out = system("./install")
+    UpdateRemotePlugins
+endfunction
+command! -nargs=0 GhostInstall call s:installGhost()
 
 function! s:loadGhost()
     if !has("nvim")
