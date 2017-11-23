@@ -6,11 +6,11 @@ Edit browser textarea content in Neovim!
 image::https://i.imgur.com/yitnBrU.gif[demo,100%]
 
 . Install this https://addons.mozilla.org/en-US/firefox/addon/ghosttext/[firefox addon] or this https://chrome.google.com/webstore/detail/ghosttext/godiecgffnchndlihlpaajjcplehddca[Chrome extension]
-. Add this plugin 
+. Add this plugin
 +
 ```
 " Vim-plug
-Plug 'raghur/vim-ghost'
+Plug 'raghur/vim-ghost', {'do': './install'}
 ```
 . Ensure you have a neovim instance open. Run `:GhostStart` to start the server.
 . On any textara, click the ghost icon - switch to neovim and edit!. Content is sync'ed real time. Works both ways - edits in the browser window are pushed to neovim as well.
@@ -36,9 +36,8 @@ My vimscript fu is pretty limited - so I thought I'd write a python plugin for n
 
 PR's welcome. Some areas:
 
-- install dependencies automatically
-- py2 support
 - vim compatibility
+- py2 support
 
 Love it or just find it as useful as I do? Star this repo to let me know
 

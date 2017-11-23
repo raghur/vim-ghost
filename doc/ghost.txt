@@ -68,7 +68,11 @@ server listens, then set g:ghost_port (defaults to 4001 if unset)
 
 If you'd like to start Ghost on nvim startup, then add this to your .vimrc
 >
-    let g:ghost_autostart=1
+    let g:ghost_autostart = 1
+
+To disable ghost, use
+>
+    let g:loaded_ghost = 1
 
 ================================================================================
 Contributing                                                 *GhostContributing*
