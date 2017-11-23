@@ -17,7 +17,7 @@ function! s:startGhost(tid)
     " during first installation, neovim has to be restarted after
     " :UpdateRemotePlugins
     if !exists(":GhostStart")
-        echom ":GhostStart not found. If just installed vim-ghost, have you restarted nvim?"
+        echom ":GhostStart not found. If you just installed vim-ghost, please restart nvim"
         return
     endif
     GhostStart
