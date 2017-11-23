@@ -7,6 +7,7 @@ let g:loaded_ghost = 1
 function! s:installGhost()
     let out = system("./install")
     UpdateRemotePlugins
+    echom ":UpdateRemotePlugins executed. Please restart nvim"
 endfunction
 command! -nargs=0 GhostInstall call s:installGhost()
 
@@ -19,6 +20,10 @@ function! s:loadGhost()
         return
     endif
 
+    if !exists(":GhostStart")
+        echom ":GhostStart not found. If this the first time you have installed nvim, then please restart nvim"
+        return
+    endif
     if exists("g:ghost_autostart") && g:ghost_autostart
         let timer = timer_start(500,
                     \ { -> execute("GhostStart") })
