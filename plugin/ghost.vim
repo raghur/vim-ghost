@@ -5,7 +5,9 @@ endif
 let g:loaded_ghost = 1
 
 function! s:installGhost()
-    let out = system("./install")
+    " just running ./install doesn't work on windows.
+    " form full path and call.
+    let out = system(getcwd() . "/install")
     UpdateRemotePlugins
     echom ":UpdateRemotePlugins executed. Please restart nvim"
 endfunction
