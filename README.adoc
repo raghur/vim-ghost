@@ -21,9 +21,8 @@ Plug 'raghur/vim-ghost', {'do': ':GhostInstall'}
 * Recent neovim
 * Python 3.4+
 * Python plugin host - `python3 -c 'import neovim'` should not error
-* [line-through]#Install python websocket server `sudo pip install git+https://github.com/dpallot/simple-websocket-server.git`#
-** [line-through]#If you don't want to install system wide, then just pass `--user` in the command above.#
-** This is now done automatically during installation with `:GhostInstall`
+* Python websocket server https://github.com/dpallot/simple-websocket-server.git
+** This is automatically installed as a `pip --user` dependency when `:GhostInstall` runs.
 
 == Rationale
 
