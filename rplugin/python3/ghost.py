@@ -16,6 +16,13 @@ logger = logging.getLogger()
 NVIM_GHOSTPY_LOGLEVEL = 'NVIM_GHOSTPY_LOG_LEVEL'
 loglevelstr = os.environ.get(NVIM_GHOSTPY_LOGLEVEL, "WARNING")
 logger.setLevel(logging.getLevelName(loglevelstr))
+PYWINAUTO = False
+try:
+    from pywinauto.application import Application
+    PYWINAUTO = True
+    logger.info("pywinauto imported successfully.")
+except ImportError as ie:
+    logger.info("Pywinauto module not available.")
 
 
 class GhostWebSocketHandler(WebSocket):
@@ -79,6 +86,8 @@ class Ghost(object):
         self.nvim = vim
         self.server_started = False
         self.port = 4001
+        self.winapp = None
+        self.linux_window_id = None
 
     @neovim.command('GhostStart', range='', nargs='0')
     def server_start(self, args, range):
@@ -102,6 +111,21 @@ class Ghost(object):
         logger.info("server started")
         self.nvim.command("echom 'Ghost server started on port %d'"
                           % self.port)
+        if PYWINAUTO:
+            if self.nvim.funcs.exists("g:ghost_nvim_process_id") != 1:
+                logger.debug("g:ghost_nvim_process_id does not exist. bailing")
+                return
+            process_id = self.nvim.api.get_var("ghost_nvim_process_id").strip()
+            app = Application().connect(process=int(process_id))
+
+            # here be dragons... app.Neovim doesn't work
+            # nor app["Neovim"]
+            self.winapp = app.windows()[0]
+            logger.debug("Connected to nvim-qt with process id: %s",
+                         process_id)
+        if self.nvim.funcs.exists("g:ghost_nvim_window_id") == 1:
+            self.linux_window_id = self.nvim.api.get_var(
+                "ghost_nvim_window_id").strip()
 
     @neovim.command('GhostStop', range='', nargs='0', sync=True)
     def server_stop(self, args, range):
@@ -162,11 +186,7 @@ class Ghost(object):
                 buffer_handler_map[websocket] = [bufnr, temp_file_handle]
                 self.nvim.command(delete_cmd)
                 logger.debug("Set up aucmd: %s", delete_cmd)
-                if self.nvim.funcs.exists("g:ghost_nvim_window_id") == 1:
-                    window_id = self.nvim.api.get_var(
-                        "ghost_nvim_window_id").strip()
-                    subprocess.run(["xdotool", "windowactivate", window_id])
-                    logger.debug("activated window: %s", window_id)
+                self._raise_window()
             change_cmd = ("au TextChanged,TextChangedI <buffer> call"
                           " GhostNotify('text_changed', %d)" % bufnr)
             self.nvim.command(change_cmd)
@@ -174,6 +194,15 @@ class Ghost(object):
         except Exception as ex:
             logger.error("Caught exception handling message: %s", ex)
             self.nvim.command("echo '%s'" % ex)
+
+    def _raise_window(self):
+        if self.linux_window_id:
+            subprocess.run(["xdotool", "windowactivate", self.linux_window_id])
+            logger.debug("activated window: %s", self.linux_window_id)
+        elif self.winapp:
+            # does not work the first time for whatever
+            # reason
+            self.winapp.set_focus()
 
     def on_message(self, req, websocket):
         self.nvim.async_call(self._handle_on_message, req, websocket)
