@@ -43,6 +43,14 @@ The nvim plugin starts a webserver (by default on port 4001) and then listens fo
 connections from the browser. For each connection, it starts a websocket listener
 and then uses that to send and receive text to and from the browser.
 
+Optionally, if you're on Linux, then if you have `xdotool` installed, this plugin 
+will also activate the nvim window when you click the ghost icon on the browser.
+On Ubuntu, you can simply do
+>
+    sudo apt-get install xdotool
+While optional, this is highly recommended as it makes the experience even more
+seamless.
+
 ================================================================================
 Usage                                                               *GhostUsage*
 
@@ -96,7 +104,8 @@ report then it would be very helpful to attach logs along with (or in a paste)
 ================================================================================
 Changelog                                                       *GhostChangelog*
 
-v0.9 - First public version.
+v1.0 [2017-11-25] - Use xdotool to raise window when GhostText is activated.
+v0.9 [2017-11-23] - First public version.
 
 ================================================================================
 Credits                                                           *GhostCredits*
