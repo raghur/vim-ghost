@@ -31,6 +31,9 @@ function! s:loadGhost()
         return
     endif
 
+    if executable("xdotool")
+        let g:ghost_nvim_window_id = system("xdotool getactivewindow")
+    endif
     if exists("g:ghost_autostart") && g:ghost_autostart
         let timer = timer_start(500, function("s:startGhost"))
     endif

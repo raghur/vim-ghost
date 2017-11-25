@@ -1,3 +1,4 @@
+import subprocess
 from http.server import HTTPServer, BaseHTTPRequestHandler
 from random import randint
 from threading import Thread
@@ -161,7 +162,11 @@ class Ghost(object):
                 buffer_handler_map[websocket] = [bufnr, temp_file_handle]
                 self.nvim.command(delete_cmd)
                 logger.debug("Set up aucmd: %s", delete_cmd)
-
+                if self.nvim.funcs.exists("g:ghost_nvim_window_id") == 1:
+                    window_id = self.nvim.api.get_var(
+                        "ghost_nvim_window_id").strip()
+                    subprocess.run(["xdotool", "windowactivate", window_id])
+                    logger.debug("activated window: %s", window_id)
             change_cmd = ("au TextChanged,TextChangedI <buffer> call"
                           " GhostNotify('text_changed', %d)" % bufnr)
             self.nvim.command(change_cmd)

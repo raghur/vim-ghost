@@ -23,6 +23,8 @@ Plug 'raghur/vim-ghost', {'do': ':GhostInstall'}
 * Python plugin host - `python3 -c 'import neovim'` should not error
 * Python websocket server https://github.com/dpallot/simple-websocket-server.git
 ** This is automatically installed as a `pip --user` dependency when `:GhostInstall` runs.
+* _Optional, but highly recommended:_ The `xdotool` command - if detected, will automatically focus the nvim window.
+** On Ubuntu, you can install it with `sudo apt-get install xdotool`
 
 == Rationale
 
