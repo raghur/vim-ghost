@@ -18,7 +18,7 @@ loglevelstr = os.environ.get(NVIM_GHOSTPY_LOGLEVEL, "WARNING")
 logger.setLevel(logging.getLevelName(loglevelstr))
 PYWINAUTO = False
 try:
-    from pywinauto.application import Application
+    from pywinauto.application import Application, ProcessNotFoundError
     PYWINAUTO = True
     logger.info("pywinauto imported successfully.")
 except ImportError as ie:
@@ -112,13 +112,16 @@ class Ghost(object):
         self.nvim.command("echom 'Ghost server started on port %d'"
                           % self.port)
         if PYWINAUTO:
-            app = Application().connect(path="nvim-qt.exe")
-            # here be dragons... app.Neovim doesn't work
-            # nor app["Neovim"]
-            self.winapp = app
-            logger.debug("Connected to nvim-qt with process id: %s",
-                         self.winapp.process.real)
+            # for windows
+            try:
+                app = Application().connect(path="nvim-qt.exe", timeout=0.1)
+                self.winapp = app
+                logger.debug("Connected to nvim-qt with process id: %s",
+                             self.winapp.process.real)
+            except ProcessNotFoundError as pne:
+                logger.warning("No process called nvim-qt found: %s", pne)
         elif self.nvim.funcs.exists("g:ghost_nvim_window_id") == 1:
+            # for linux
             self.linux_window_id = self.nvim.api.get_var(
                 "ghost_nvim_window_id").strip()
 
