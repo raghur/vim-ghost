@@ -17,12 +17,13 @@ NVIM_GHOSTPY_LOGLEVEL = 'NVIM_GHOSTPY_LOG_LEVEL'
 loglevelstr = os.environ.get(NVIM_GHOSTPY_LOGLEVEL, "WARNING")
 logger.setLevel(logging.getLevelName(loglevelstr))
 PYWINAUTO = False
-try:
-    from pywinauto.application import Application, ProcessNotFoundError
-    PYWINAUTO = True
-    logger.info("pywinauto imported successfully.")
-except ImportError as ie:
-    logger.info("Pywinauto module not available.")
+if os.name == "nt":
+    try:
+        from pywinauto.application import Application, ProcessNotFoundError
+        PYWINAUTO = True
+        logger.info("pywinauto imported successfully.")
+    except ImportError as ie:
+        logger.info("Pywinauto module not available.")
 
 
 class GhostWebSocketHandler(WebSocket):
