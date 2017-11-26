@@ -23,8 +23,23 @@ Plug 'raghur/vim-ghost', {'do': ':GhostInstall'}
 * Python plugin host - `python3 -c 'import neovim'` should not error
 * Python websocket server https://github.com/dpallot/simple-websocket-server.git
 ** This is automatically installed as a `pip --user` dependency when `:GhostInstall` runs.
-* _Optional, but highly recommended:_ The `xdotool` command - if detected, will automatically focus the nvim window.
+
+._Optional, but highly recommended - Switching focus to Neovim_
+* Linux: The `xdotool` command - if available, will be used to focus the nvim window. 
+Works in console, tmux or guis like neovim-qt
 ** On Ubuntu, you can install it with `sudo apt-get install xdotool`
+* Windows: If pywinauto (https://github.com/pywinauto/pywinauto)
+is available, it will be used to bring the neovim-qt to foreground.
++
+[source,shell]
+----
+# Ensure that you install this module for the version of python 
+# that is loaded in neovim
+pip install pywinauto
+----
+Limitations: Currently, on windows, the processname is hardcoded to nvim-qt
+If you use any of the other GUIs for neovim (OniVim, gonvim etc) then this 
+will not work.
 
 == Rationale
 

@@ -43,13 +43,26 @@ The nvim plugin starts a webserver (by default on port 4001) and then listens fo
 connections from the browser. For each connection, it starts a websocket listener
 and then uses that to send and receive text to and from the browser.
 
-Optionally, if you're on Linux, then if you have `xdotool` installed, this plugin 
-will also activate the nvim window when you click the ghost icon on the browser.
-On Ubuntu, you can simply do
+Optional Dependencies
+---------------------
+
+Linux: If `xdotool` is available, this plugin will also activate the nvim window
+when you click the ghost icon on the browser.  On Ubuntu, you can simply do
 >
     sudo apt-get install xdotool
 While optional, this is highly recommended as it makes the experience even more
 seamless.
+
+Windows: If python module pywinauto (https://github.com/pywinauto/pywinauto)
+is available, it will be used to bring the neovim-qt to foreground.
+>
+    # Ensure that you install this module for the version of python 
+    # that is loaded in neovim
+    pip install pywinauto
+
+Limitations: Currently, on windows, the processname is hardcoded to nvim-qt
+If you use any of the other GUIs for neovim (OniVim, gonvim etc) then this 
+will not work.
 
 ================================================================================
 Usage                                                               *GhostUsage*
@@ -104,12 +117,21 @@ report then it would be very helpful to attach logs along with (or in a paste)
 ================================================================================
 Changelog                                                       *GhostChangelog*
 
-v1.0 [2017-11-25] - Use xdotool to raise window when GhostText is activated.
-v0.9 [2017-11-23] - First public version.
+v1.01 [2017-11-26]
+    * Use pywinauto for raising the nvim-qt window on Windows
+v1.0 [2017-11-25]
+    * Use xdotool to raise window when GhostText is activated.
+v0.9 [2017-11-23]
+    * First public version.
 
 ================================================================================
 Credits                                                           *GhostCredits*
 
-Big thanks to GhostText and neovim
+Big thanks to
+
+1. GhostText
+2. neovim
+3. pywinauto
+4. xdotool
 
 
