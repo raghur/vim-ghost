@@ -112,18 +112,13 @@ class Ghost(object):
         self.nvim.command("echom 'Ghost server started on port %d'"
                           % self.port)
         if PYWINAUTO:
-            if self.nvim.funcs.exists("g:ghost_nvim_process_id") != 1:
-                logger.debug("g:ghost_nvim_process_id does not exist. bailing")
-                return
-            process_id = self.nvim.api.get_var("ghost_nvim_process_id").strip()
-            app = Application().connect(process=int(process_id))
-
+            app = Application().connect(path="nvim-qt.exe")
             # here be dragons... app.Neovim doesn't work
             # nor app["Neovim"]
-            self.winapp = app.windows()[0]
+            self.winapp = app
             logger.debug("Connected to nvim-qt with process id: %s",
-                         process_id)
-        if self.nvim.funcs.exists("g:ghost_nvim_window_id") == 1:
+                         self.winapp.process.real)
+        elif self.nvim.funcs.exists("g:ghost_nvim_window_id") == 1:
             self.linux_window_id = self.nvim.api.get_var(
                 "ghost_nvim_window_id").strip()
 
@@ -200,9 +195,13 @@ class Ghost(object):
             subprocess.run(["xdotool", "windowactivate", self.linux_window_id])
             logger.debug("activated window: %s", self.linux_window_id)
         elif self.winapp:
-            # does not work the first time for whatever
-            # reason
-            self.winapp.set_focus()
+            logger.debug("WINDOWS: trying to raise window")
+            # dragons - this is the only thing that works.
+            try:
+                self.winapp.windows()[0].set_focus()
+                self.winapp.windows()[0].ShowInTaskbar()
+            except Exception as e:
+                logger.warning("Error during _raise_window, %s", e)
 
     def on_message(self, req, websocket):
         self.nvim.async_call(self._handle_on_message, req, websocket)
