@@ -95,6 +95,16 @@ To disable ghost, use
 >
     let g:loaded_ghost = 1
 
+vim-ghost creates files with a prefix like so - `ghost-<domain>-<titleslug>-<random>.txt`
+You can use this to set up options specific to a domain - like so:
+
+>
+    augroup ghost
+    au!
+    autocmd BufNewFile,BufRead *stackexchange.com* set filetype=markdown
+    autocmd BufNewFile,BufRead *stackoverflow.com* set filetype=markdown
+    augroup END
+
 ================================================================================
 Contributing                                                 *GhostContributing*
 
@@ -117,6 +127,8 @@ report then it would be very helpful to attach logs along with (or in a paste)
 ================================================================================
 Changelog                                                       *GhostChangelog*
 
+v1.10 [2017-12-02]
+    * Form filenames using url host and title
 v1.01 [2017-11-26]
     * Use pywinauto for raising the nvim-qt window on Windows
 v1.0 [2017-11-25]
