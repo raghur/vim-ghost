@@ -9,6 +9,7 @@ import os
 from SimpleWebSocketServer import SimpleWebSocketServer, WebSocket
 import neovim
 from neovim.api.nvim import NvimError
+from slugify import slugify
 
 buffer_handler_map = {}
 websocket_servers = []
@@ -31,7 +32,7 @@ class GhostWebSocketHandler(WebSocket):
     def handleMessage(self):
         req = json.loads(self.data)
         logger.info("recd on websocket: %s message: %s",
-                    self.address, req["text"])
+                    self.address, self.data)
         self.server.context.on_message(req, self)
 
     def handleConnected(self):
@@ -173,7 +174,9 @@ class Ghost(object):
                 self.nvim.buffers[bufnr][:] = req["text"].split("\n")
             else:
                 # new client
-                temp_file_handle, temp_file_name = mkstemp(prefix="tmp_ghost_",
+                prefix = "ghost-" + req["url"] + "-" + slugify(req["title"],
+                                                               max_length=50)
+                temp_file_handle, temp_file_name = mkstemp(prefix=prefix,
                                                            suffix=".txt",
                                                            text=True)
                 self.nvim.command("ed %s" % temp_file_name)
