@@ -174,8 +174,8 @@ class Ghost(object):
                 self.nvim.buffers[bufnr][:] = req["text"].split("\n")
             else:
                 # new client
-                prefix = "ghost-" + req["url"] + "-" + slugify(req["title"],
-                                                               max_length=50)
+                prefix = "ghost-" + req["url"] + "-" + \
+                    slugify(req["title"])[:50]
                 temp_file_handle, temp_file_name = mkstemp(prefix=prefix,
                                                            suffix=".txt",
                                                            text=True)
