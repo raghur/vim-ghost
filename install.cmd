@@ -1,1 +1,1 @@
-pip3 install --user -r requirements_win.txt
+python -mpip install --user -r requirements_win.txt
