@@ -51,7 +51,7 @@ class MyWebSocketServer(SimpleWebSocketServer):
 
 
 def startWebSocketSvr(context, port):
-    websocket_server = MyWebSocketServer(context, '', port,
+    websocket_server = MyWebSocketServer(context, '127.0.0.1', port,
                                          GhostWebSocketHandler)
     ws_thread = Thread(target=websocket_server.serveforever, daemon=True)
     ws_thread.start()
@@ -104,7 +104,7 @@ class Ghost(object):
         else:
             self.nvim.api.set_var("ghost_port", self.port)
 
-        self.httpserver = MyHTTPServer(self, ('', self.port),
+        self.httpserver = MyHTTPServer(self, ('127.0.0.1', self.port),
                                        WebRequestHandler)
         http_server_thread = Thread(target=self.httpserver.serve_forever,
                                     daemon=True)
