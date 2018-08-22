@@ -6,6 +6,7 @@ from tempfile import mkstemp
 import logging
 import json
 import os
+import sys
 from SimpleWebSocketServer import SimpleWebSocketServer, WebSocket
 import neovim
 from neovim.api.nvim import NvimError
@@ -89,6 +90,7 @@ class Ghost(object):
         self.server_started = False
         self.port = 4001
         self.winapp = None
+        self.darwinapp = None
         self.linux_window_id = None
 
     @neovim.command('GhostStart', range='', nargs='0')
@@ -126,6 +128,12 @@ class Ghost(object):
             # for linux
             self.linux_window_id = self.nvim.api.get_var(
                 "ghost_nvim_window_id").strip()
+        elif sys.platform.startswith('darwin'):
+            if os.getenv('ITERM_PROFILE', None):
+                self.darwinapp = "iTerm2"
+            elif os.getenv('TERM_PROGRAM', None) == 'Apple_Terminal':
+                self.darwinapp = "Terminal"
+            logger.debug(self.darwinapp + " detected")
 
     @neovim.command('GhostStop', range='', nargs='0', sync=True)
     def server_stop(self, args, range):
@@ -209,6 +217,11 @@ class Ghost(object):
                 self.winapp.windows()[0].ShowInTaskbar()
             except Exception as e:
                 logger.warning("Error during _raise_window, %s", e)
+        elif self.darwinapp:
+            logger.debug("Darwin: trying to raise window")
+            subprocess.call(["osascript", "-e",
+                             'tell application "' + self.darwinapp +
+                             '" to activate'])
 
     def on_message(self, req, websocket):
         self.nvim.async_call(self._handle_on_message, req, websocket)
