@@ -92,6 +92,7 @@ class Ghost(object):
         self.winapp = None
         self.darwinapp = None
         self.linux_window_id = None
+        self.cmd = 'ed'
 
     @neovim.command('GhostStart', range='', nargs='0')
     def server_start(self, args, range):
@@ -105,6 +106,11 @@ class Ghost(object):
             self.port = self.nvim.api.get_var("ghost_port")
         else:
             self.nvim.api.set_var("ghost_port", self.port)
+
+        if self.nvim.funcs.exists("g:ghost_cmd") == 1:
+            self.cmd = self.nvim.api.get_var("ghost_cmd")
+        else:
+            self.nvim.api.set_var("ghost_cmd", self.cmd)
 
         self.httpserver = MyHTTPServer(self, ('127.0.0.1', self.port),
                                        WebRequestHandler)
@@ -187,7 +193,7 @@ class Ghost(object):
                 temp_file_handle, temp_file_name = mkstemp(prefix=prefix,
                                                            suffix=".txt",
                                                            text=True)
-                self.nvim.command("ed %s" % temp_file_name)
+                self.nvim.command("%s %s" % (self.cmd, temp_file_name))
                 self.nvim.current.buffer[:] = req["text"].split("\n")
                 bufnr = self.nvim.current.buffer.number
                 delete_cmd = ("au BufDelete <buffer> call"
