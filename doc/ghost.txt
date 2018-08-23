@@ -95,7 +95,7 @@ To disable ghost, use
 >
     let g:loaded_ghost = 1
 
-By default the temporary files are opend with |:edit| but you can use any
+By default the temporary files are opened with |:edit| but you can use any
 command you like (|:split|, |:vsplit|, |:tabedit|, etc.) like this
 >
     let g:ghost_cmd = 'tabedit'
