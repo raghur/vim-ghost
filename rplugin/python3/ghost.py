@@ -6,6 +6,7 @@ from tempfile import mkstemp
 import logging
 import json
 import os
+import sys
 from SimpleWebSocketServer import SimpleWebSocketServer, WebSocket
 import neovim
 from neovim.api.nvim import NvimError
@@ -89,7 +90,9 @@ class Ghost(object):
         self.server_started = False
         self.port = 4001
         self.winapp = None
+        self.darwinapp = None
         self.linux_window_id = None
+        self.cmd = 'ed'
 
     @neovim.command('GhostStart', range='', nargs='0')
     def server_start(self, args, range):
@@ -103,6 +106,11 @@ class Ghost(object):
             self.port = self.nvim.api.get_var("ghost_port")
         else:
             self.nvim.api.set_var("ghost_port", self.port)
+
+        if self.nvim.funcs.exists("g:ghost_cmd") == 1:
+            self.cmd = self.nvim.api.get_var("ghost_cmd")
+        else:
+            self.nvim.api.set_var("ghost_cmd", self.cmd)
 
         self.httpserver = MyHTTPServer(self, ('127.0.0.1', self.port),
                                        WebRequestHandler)
@@ -126,6 +134,12 @@ class Ghost(object):
             # for linux
             self.linux_window_id = self.nvim.api.get_var(
                 "ghost_nvim_window_id").strip()
+        elif sys.platform.startswith('darwin'):
+            if os.getenv('ITERM_PROFILE', None):
+                self.darwinapp = "iTerm2"
+            elif os.getenv('TERM_PROGRAM', None) == 'Apple_Terminal':
+                self.darwinapp = "Terminal"
+            logger.debug(self.darwinapp + " detected")
 
     @neovim.command('GhostStop', range='', nargs='0', sync=True)
     def server_stop(self, args, range):
@@ -179,7 +193,7 @@ class Ghost(object):
                 temp_file_handle, temp_file_name = mkstemp(prefix=prefix,
                                                            suffix=".txt",
                                                            text=True)
-                self.nvim.command("ed %s" % temp_file_name)
+                self.nvim.command("%s %s" % (self.cmd, temp_file_name))
                 self.nvim.current.buffer[:] = req["text"].split("\n")
                 bufnr = self.nvim.current.buffer.number
                 delete_cmd = ("au BufDelete <buffer> call"
@@ -209,6 +223,11 @@ class Ghost(object):
                 self.winapp.windows()[0].ShowInTaskbar()
             except Exception as e:
                 logger.warning("Error during _raise_window, %s", e)
+        elif self.darwinapp:
+            logger.debug("Darwin: trying to raise window")
+            subprocess.call(["osascript", "-e",
+                             'tell application "' + self.darwinapp +
+                             '" to activate'])
 
     def on_message(self, req, websocket):
         self.nvim.async_call(self._handle_on_message, req, websocket)

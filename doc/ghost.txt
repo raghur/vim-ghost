@@ -95,6 +95,11 @@ To disable ghost, use
 >
     let g:loaded_ghost = 1
 
+By default the temporary files are opend with |:edit| but you can use any
+command you like (|:split|, |:vsplit|, |:tabedit|, etc.) like this
+>
+    let g:ghost_cmd = 'tabedit'
+
 vim-ghost creates files with a prefix like so - `ghost-<domain>-<titleslug>-<random>.txt`
 You can use this to set up options specific to a domain - like so:
 
