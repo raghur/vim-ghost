@@ -139,6 +139,8 @@ class Ghost(object):
                 self.darwinapp = "iTerm2"
             elif os.getenv('TERM_PROGRAM', None) == 'Apple_Terminal':
                 self.darwinapp = "Terminal"
+            elif os.getenv('KITTY_WINDOW_ID', None):
+                self.darwinapp = 'kitty'
             logger.debug("%s detected" % self.darwinapp)
 
     @neovim.command('GhostStop', range='', nargs='0', sync=True)
