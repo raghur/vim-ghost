@@ -139,7 +139,7 @@ class Ghost(object):
                 self.darwinapp = "iTerm2"
             elif os.getenv('TERM_PROGRAM', None) == 'Apple_Terminal':
                 self.darwinapp = "Terminal"
-            logger.debug(self.darwinapp + " detected")
+            logger.debug("%s detected" % self.darwinapp)
 
     @neovim.command('GhostStop', range='', nargs='0', sync=True)
     def server_stop(self, args, range):
