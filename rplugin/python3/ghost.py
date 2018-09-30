@@ -102,15 +102,15 @@ class Ghost(object):
             logger.info("server already running on port %d", self.port)
             return
 
-        if self.nvim.funcs.exists("g:ghost_port") == 1:
-            self.port = self.nvim.api.get_var("ghost_port")
+        if "ghost_port" in self.nvim.vars:
+            self.port = self.nvim.vars["ghost_port"]
         else:
-            self.nvim.api.set_var("ghost_port", self.port)
+            self.nvim.vars["ghost_port"] = self.port
 
-        if self.nvim.funcs.exists("g:ghost_cmd") == 1:
-            self.cmd = self.nvim.api.get_var("ghost_cmd")
+        if "ghost_cmd" in self.nvim.vars:
+            self.cmd = self.nvim.vars["ghost_cmd"]
         else:
-            self.nvim.api.set_var("ghost_cmd", self.cmd)
+            self.nvim.vars["ghost_cmd"] = self.cmd
 
         self.httpserver = MyHTTPServer(self, ('127.0.0.1', self.port),
                                        WebRequestHandler)
@@ -130,10 +130,9 @@ class Ghost(object):
                              self.winapp.process.real)
             except ProcessNotFoundError as pne:
                 logger.warning("No process called nvim-qt found: %s", pne)
-        elif self.nvim.funcs.exists("g:ghost_nvim_window_id") == 1:
+        elif "ghost_nvim_window_id" in self.nvim.vars:
             # for linux
-            self.linux_window_id = self.nvim.api.get_var(
-                "ghost_nvim_window_id").strip()
+            self.linux_window_id = self.nvim.vars["ghost_nvim_window_id"].strip()
         elif sys.platform.startswith('darwin'):
             if os.getenv('ITERM_PROFILE', None):
                 self.darwinapp = "iTerm2"

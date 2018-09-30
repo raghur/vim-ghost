@@ -1,6 +1,6 @@
-= (N)Vim Ghost
+= Vim Ghost
 
-Edit browser textarea content in Neovim!
+Edit browser textarea content in Vim/Neovim!
 
 [.center.text-center]
 image::https://i.imgur.com/yitnBrU.gif[demo,100%]
@@ -12,17 +12,31 @@ image::https://i.imgur.com/yitnBrU.gif[demo,100%]
 " Vim-plug
 Plug 'raghur/vim-ghost', {'do': ':GhostInstall'}
 ```
-. Ensure you have a neovim instance open. Run `:GhostStart` to start the server.
-. On any textara, click the ghost icon - switch to neovim and edit!. Content is sync'ed real time. Works both ways - edits in the browser window are pushed to neovim as well.
+. Ensure you have a vim/neovim instance open. Run `:GhostStart` to start the server.
+. On any textarea, click the ghost icon - switch to neovim and edit!. Content is sync'ed real time. Works both ways - edits in the browser window are pushed to neovim as well.
 . When done, just delete the buffer with `:bd!` - you'll be disconnected
 
 == Requirements
 
-* Recent neovim
+* Recent neovim/vim
 * Python 3.4+
 * Python plugin host - `python3 -c 'import neovim'` should not error
 * Python websocket server https://github.com/dpallot/simple-websocket-server.git
 ** This is automatically installed as a `pip --user` dependency when `:GhostInstall` runs.
+
+=== additional requirements for vim
+
+* https://github.com/roxma/vim-hug-neovim-rpc[vim-hug-neovim-rpc]
+* https://github.com/roxma/nvim-yarp[nvim-yarp]
+
+[source,vimscript]
+----
+Plug 'roxma/nvim-yarp', {'cond': v:version == 800 && !has('nvim')}
+Plug 'roxma/vim-hug-neovim-rpc',  {'cond': v:version == 800 && !has('nvim')}
+
+----
+
+== Auto switching to vim:
 
 ._Optional, but highly recommended - Switching focus to Neovim_
 * Linux: The `xdotool` command - if available, will be used to focus the nvim window. 
@@ -47,14 +61,11 @@ With Firefox moving to webextensions, *It's all text* is dead. Typing in text ar
 
 My vimscript fu is pretty limited - so I thought I'd write a python plugin for neovim.
 
-*PS: I know the repo name of vim-ghost is misleading.*
-
 == TODOS
 
 PR's welcome. Some areas:
 
-- vim compatibility
-- py2 support
+- [.line-through]#vim compatibility# - DONE
 
 Love it or just find it as useful as I do? Star this repo to let me know
 
