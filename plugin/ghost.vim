@@ -24,16 +24,12 @@ function! s:startGhost(tid)
 endfunction
 
 function! s:loadGhost()
-    if !has("nvim")
+    if executable("xdotool")
+        let g:ghost_nvim_window_id = system("xdotool getactivewindow")
         return
     endif
 
     if !has('timers')
-        return
-    endif
-
-    if executable("xdotool")
-        let g:ghost_nvim_window_id = system("xdotool getactivewindow")
         return
     endif
 

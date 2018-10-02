@@ -211,22 +211,27 @@ class Ghost(object):
             self.nvim.command("echo '%s'" % ex)
 
     def _raise_window(self):
-        if self.linux_window_id:
-            subprocess.call(["xdotool", "windowactivate", self.linux_window_id])
-            logger.debug("activated window: %s", self.linux_window_id)
-        elif self.winapp:
-            logger.debug("WINDOWS: trying to raise window")
-            # dragons - this is the only thing that works.
-            try:
-                self.winapp.windows()[0].set_focus()
-                self.winapp.windows()[0].ShowInTaskbar()
-            except Exception as e:
-                logger.warning("Error during _raise_window, %s", e)
-        elif self.darwinapp:
-            logger.debug("Darwin: trying to raise window")
-            subprocess.call(["osascript", "-e",
-                             'tell application "' + self.darwinapp +
-                             '" to activate'])
+        try:
+            if self.linux_window_id:
+                subprocess.call(["xdotool", "windowactivate", self.linux_window_id])
+                logger.debug("activated window: %s", self.linux_window_id)
+            elif self.winapp:
+                logger.debug("WINDOWS: trying to raise window")
+                # dragons - this is the only thing that works.
+                try:
+                    self.winapp.windows()[0].set_focus()
+                    self.winapp.windows()[0].ShowInTaskbar()
+                except Exception as e:
+                    logger.warning("Error during _raise_window, %s", e)
+            elif self.darwinapp:
+                logger.debug("Darwin: trying to raise window")
+                subprocess.call(["osascript", "-e",
+                                 'tell application "' + self.darwinapp +
+                                 '" to activate'])
+        except Exception as e:
+            # with vim yarp etc - letting an exception escape messes
+            # with other plugins. so catch everything
+            logger.debug("error while activating window - %s" % e)
 
     def on_message(self, req, websocket):
         self.nvim.async_call(self._handle_on_message, req, websocket)
