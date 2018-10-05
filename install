@@ -1,2 +1,0 @@
-#!/bin/bash
-python3 -mpip install --user -r requirements_posix.txt
