@@ -8,8 +8,12 @@ import json
 import os
 import sys
 from SimpleWebSocketServer import SimpleWebSocketServer, WebSocket
-import neovim
-from neovim.api.nvim import NvimError
+try:
+    import neovim
+    from neovim.api.nvim import NvimError
+except ImportError:
+    import pynvim
+    from pynvim.api.nvim import NvimError
 from slugify import slugify
 
 buffer_handler_map = {}
