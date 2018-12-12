@@ -81,9 +81,23 @@ class WebRequestHandler(BaseHTTPRequestHandler):
 
 class MyHTTPServer(HTTPServer):
 
-    def __init__(self, context, *args, **kwargs):
-        self.context = context
-        HTTPServer.__init__(self, *args, **kwargs)
+    def __init__(self, ghost, *args, **kwargs):
+        self.ghost = ghost
+        self.error = None
+        self.didPrintStartMsg = False
+        try:
+            HTTPServer.__init__(self, *args, **kwargs)
+        except Exception as e:
+            self.error = e
+
+    def service_actions(self):
+        if not self.didPrintStartMsg:
+            logger.info("server started")
+            self.ghost.nvim.async_call(self.ghost.echo,
+                                       "server started on port {0}",
+                                       self.ghost.port)
+            self.ghost.server_started = True
+            self.didPrintStartMsg = True
 
 
 @neovim.plugin
@@ -98,11 +112,26 @@ class Ghost(object):
         self.linux_window_id = None
         self.cmd = 'ed'
 
+    def echo(self, message, *args):
+        msg = message.format(*args)
+        self.nvim.command("echom 'Ghost: {0}'".format(msg))
+
     @neovim.command('GhostStart', range='', nargs='0')
     def server_start(self, args, range):
+        def start_http_server():
+            try:
+                if self.httpserver.error is not None:
+                    raise self.httpserver.error
+                self.httpserver.serve_forever()
+            except Exception as e:
+                self.httpserver.error = e
+                self.server_started = False
+                self.nvim.async_call(self.echo,
+                                     "Error starting server: {0}. Check if port {1} is available",
+                                     self.httpserver.error, self.port)
+
         if self.server_started:
-            self.nvim.command("echo 'Ghost server already running on port %d'"
-                              % self.port)
+            self.echo('server already running on port {0}', self.port)
             logger.info("server already running on port %d", self.port)
             return
 
@@ -118,19 +147,15 @@ class Ghost(object):
 
         self.httpserver = MyHTTPServer(self, ('127.0.0.1', self.port),
                                        WebRequestHandler)
-        http_server_thread = Thread(target=self.httpserver.serve_forever,
+        http_server_thread = Thread(target=start_http_server,
                                     daemon=True)
         http_server_thread.start()
-        self.server_started = True
-        logger.info("server started")
-        self.nvim.command("echom 'Ghost server started on port %d'"
-                          % self.port)
         if PYWINAUTO:
             # for windows
             try:
                 app = Application().connect(path="nvim-qt.exe", timeout=0.1)
                 self.winapp = app
-                logger.debug("Connected to nvim-qt with process id: %s",
+                logger.debug("Connected to nvim-qt with process id: s",
                              self.winapp.process.real)
             except ProcessNotFoundError as pne:
                 logger.warning("No process called nvim-qt found: %s", pne)
@@ -147,7 +172,7 @@ class Ghost(object):
     @neovim.command('GhostStop', range='', nargs='0', sync=True)
     def server_stop(self, args, range):
         if not self.server_started:
-            self.nvim.command("echo 'Server not running'")
+            self.echo("Server not running")
             return
         self.httpserver.shutdown()
         self.httpserver.socket.close()
@@ -156,7 +181,7 @@ class Ghost(object):
                         server.serversocket.getsockname()[1])
             server.close()
         logger.info("Shutdown websockets and httpd")
-        self.nvim.command("echom 'Ghost server stopped'")
+        self.echo("Ghost server stopped")
         self.server_started = False
 
     @neovim.function("GhostNotify")
@@ -212,12 +237,13 @@ class Ghost(object):
             logger.debug("Set up aucmd: %s", change_cmd)
         except Exception as ex:
             logger.error("Caught exception handling message: %s", ex)
-            self.nvim.command("echo '%s'" % ex)
+            self.echo("{0}", ex)
 
     def _raise_window(self):
         try:
             if self.linux_window_id:
-                subprocess.call(["xdotool", "windowactivate", self.linux_window_id])
+                subprocess.call(["xdotool", "windowactivate",
+                                 self.linux_window_id])
                 logger.debug("activated window: %s", self.linux_window_id)
             elif self.winapp:
                 logger.debug("WINDOWS: trying to raise window")
