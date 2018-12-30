@@ -60,6 +60,9 @@ is available, it will be used to bring the neovim-qt to foreground.
     # that is loaded in neovim
     pip install pywinauto
 
+macOS: Set the g:ghost_darwin_app variable to launch the correct app. See its
+docs for more info.
+
 Limitations: Currently, on windows, the processname is hardcoded to nvim-qt
 If you use any of the other GUIs for neovim (OniVim, gonvim etc) then this 
 will not work.
@@ -82,26 +85,63 @@ You can shutdown the server with :GhostStop
 ================================================================================
 Configuration                                               *GhostConfiguration*
 
-There's very little to configure. If you need to change the port on which the
-server listens, then set g:ghost_port (defaults to 4001 if unset)
+You can configure vim-ghost by setting these options in your vimrc. You will
+need to restart vim-ghost (or restart vim) for them to take effect.
+
+--------------------------------------------------------------------------------
+                                                                  *g:ghost_port*
+Change the port on which the server listens.
 >
     let g:ghost_port = 5678
+<
+Default: 4001
 
-If you'd like to start Ghost on nvim startup, then add this to your .vimrc
+--------------------------------------------------------------------------------
+                                                             *g:ghost_autostart*
+Start Ghost on nvim startup.
 >
     let g:ghost_autostart = 1
+<
+Default: 0
 
-To disable ghost, use
+--------------------------------------------------------------------------------
+                                                                *g:loaded_ghost*
+Disable ghost.
 >
     let g:loaded_ghost = 1
+<
+Default: 0
 
-By default the temporary files are opened with |:edit| but you can use any
-command you like (|:split|, |:vsplit|, |:tabedit|, etc.) like this
+--------------------------------------------------------------------------------
+                                                                   *g:ghost_cmd*
+Use a different command to open temporary files.
+Examples: |:split|, |:vsplit|, |:tabedit|, etc.
 >
     let g:ghost_cmd = 'tabedit'
+<
+Default: |edit|
 
-vim-ghost creates files with a prefix like so - `ghost-<domain>-<titleslug>-<random>.txt`
-You can use this to set up options specific to a domain - like so:
+--------------------------------------------------------------------------------
+                                                            *g:ghost_darwin_app*
+Specify the macOS app you run vim-ghost in (usually your terminal app for
+terminal vim, or the vim program for GUI vim.
+
+You can check by running this command from inside vim:
+>
+   :!osascript -e 'tell application "System Events"' -e 'name of first application process whose frontmost is true' -e 'end tell'
+<
+Examples: 'Terminal', 'iTerm2', 'VimR', 'MacVim', 'kitty'
+>
+    let g:ghost_cmd = 'Terminal'
+<
+Default: ''
+
+--------------------------------------------------------------------------------
+
+Syntax Highlighting
+
+  vim-ghost creates files with a prefix like so - `ghost-<domain>-<titleslug>-<random>.txt`
+  You can use this to set up options specific to a domain - like so:
 
 >
     augroup ghost

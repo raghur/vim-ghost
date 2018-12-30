@@ -20,7 +20,7 @@ Plug 'raghur/vim-ghost', {'do': ':GhostInstall'}
 
 * Recent neovim/vim
 * Python 3.4+
-* Python plugin host - `python3 -c 'import neovim'` should not error
+* Python plugin host - `python3 -c 'import pynvim'` should not error
 * Python websocket server https://github.com/dpallot/simple-websocket-server.git
 ** This is automatically installed as a `pip --user` dependency when `:GhostInstall` runs.
 
@@ -31,28 +31,29 @@ Plug 'raghur/vim-ghost', {'do': ':GhostInstall'}
 
 [source,vimscript]
 ----
-Plug 'roxma/nvim-yarp', {'cond': v:version == 800 && !has('nvim')}
-Plug 'roxma/vim-hug-neovim-rpc',  {'cond': v:version == 800 && !has('nvim')}
-
+" Only enabled for Vim 8 (not for Neovim).
+Plug 'roxma/nvim-yarp', v:version == 800 && !has('nvim') ? {} : { 'on': [], 'for': [] }
+Plug 'roxma/vim-hug-neovim-rpc', v:version == 800 && !has('nvim') ? {} : { 'on': [], 'for': [] }
 ----
 
 == Auto switching to vim:
 
 ._Optional, but highly recommended - Switching focus to Neovim_
-* Linux: The `xdotool` command - if available, will be used to focus the nvim window. 
+* Linux: The `xdotool` command - if available, will be used to focus the nvim window.
 Works in console, tmux or guis like neovim-qt
 ** On Ubuntu, you can install it with `sudo apt-get install xdotool`
+* macOS: Set the `g:ghost_darwin_app` variable to the name of your app (see docs).
 * Windows: If pywinauto (https://github.com/pywinauto/pywinauto)
 is available, it will be used to bring the neovim-qt to foreground.
 +
 [source,shell]
 ----
-# Ensure that you install this module for the version of python 
+# Ensure that you install this module for the version of python
 # that is loaded in neovim
 pip install pywinauto
 ----
 Limitations: Currently, on windows, the processname is hardcoded to nvim-qt
-If you use any of the other GUIs for neovim (OniVim, gonvim etc) then this 
+If you use any of the other GUIs for neovim (OniVim, gonvim etc) then this
 will not work.
 
 == Rationale

@@ -118,7 +118,7 @@ class Ghost(object):
         self.server_started = False
         self.port = 4001
         self.winapp = None
-        self.darwinapp = None
+        self.darwin_app = None
         self.linux_window_id = None
         self.cmd = 'ed'
 
@@ -155,6 +155,8 @@ class Ghost(object):
         else:
             self.nvim.vars["ghost_cmd"] = self.cmd
 
+        self.darwin_app = self.nvim.vars.get("ghost_darwin_app")
+
         self.httpserver = MyHTTPServer(self, ('127.0.0.1', self.port),
                                        WebRequestHandler)
         http_server_thread = Thread(target=start_http_server,
@@ -172,12 +174,6 @@ class Ghost(object):
         elif "ghost_nvim_window_id" in self.nvim.vars:
             # for linux
             self.linux_window_id = self.nvim.vars["ghost_nvim_window_id"].strip()
-        elif sys.platform.startswith('darwin'):
-            if os.getenv('ITERM_PROFILE', None):
-                self.darwinapp = "iTerm2"
-            elif os.getenv('TERM_PROGRAM', None) == 'Apple_Terminal':
-                self.darwinapp = "Terminal"
-            logger.debug("%s detected" % self.darwinapp)
 
     @neovim.command('GhostStop', range='', nargs='0', sync=True)
     def server_stop(self, args, range):
@@ -263,10 +259,10 @@ class Ghost(object):
                     self.winapp.windows()[0].ShowInTaskbar()
                 except Exception as e:
                     logger.warning("Error during _raise_window, %s", e)
-            elif self.darwinapp:
+            elif self.darwin_app:
                 logger.debug("Darwin: trying to raise window")
                 subprocess.call(["osascript", "-e",
-                                 'tell application "' + self.darwinapp +
+                                 'tell application "' + self.darwin_app +
                                  '" to activate'])
         except Exception as e:
             # with vim yarp etc - letting an exception escape messes
