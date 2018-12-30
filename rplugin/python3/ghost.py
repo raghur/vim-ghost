@@ -38,29 +38,34 @@ class GhostWebSocketHandler(WebSocket):
         req = json.loads(self.data)
         logger.info("recd on websocket: %s message: %s",
                     self.address, self.data)
-        self.server.context.on_message(req, self)
+        self.server.ghost.on_message(req, self)
 
     def handleConnected(self):
         logger.debug("Websocket connected %s", self.address)
 
     def handleClose(self):
         logger.debug("Websocket closed event %s ", self.address)
-        self.server.context.on_websocket_close(self)
+        self.server.ghost.on_websocket_close(self)
 
 
 class MyWebSocketServer(SimpleWebSocketServer):
 
-    def __init__(self, context, *args, **kwargs):
-        self.context = context
+    def __init__(self, ghostObj, *args, **kwargs):
+        self.ghost = ghostObj
         SimpleWebSocketServer.__init__(self, *args, **kwargs)
 
 
-def startWebSocketSvr(context, port):
-    websocket_server = MyWebSocketServer(context, '127.0.0.1', port,
-                                         GhostWebSocketHandler)
-    ws_thread = Thread(target=websocket_server.serveforever, daemon=True)
-    ws_thread.start()
-    websocket_servers.append(websocket_server)
+def startWebSocketSvr(ghostObj, port):
+    try:
+        websocket_server = MyWebSocketServer(ghostObj, '127.0.0.1', port,
+                                             GhostWebSocketHandler)
+        ws_thread = Thread(target=websocket_server.serveforever, daemon=True)
+        ws_thread.start()
+        websocket_servers.append(websocket_server)
+        logger.info("Started websocket server on port: %d", port)
+    except BaseException as e:
+        logger.error("Caught error", exc_info=e)
+        raise e
 
 
 class WebRequestHandler(BaseHTTPRequestHandler):
@@ -71,12 +76,17 @@ class WebRequestHandler(BaseHTTPRequestHandler):
         self.end_headers()
 
     def do_GET(self):
-        self._set_headers()
-        port = randint(60000, 65535)
-        response_obj = {"ProtocolVersion": 1}
-        response_obj["WebSocketPort"] = port
-        startWebSocketSvr(self.server.context, port)
-        self.wfile.write(json.dumps(response_obj).encode())
+        try:
+            logger.debug("Got GET request")
+            self._set_headers()
+            port = randint(60000, 65535)
+            response_obj = {"ProtocolVersion": 1}
+            response_obj["WebSocketPort"] = port
+            startWebSocketSvr(self.server.ghost, port)
+            self.wfile.write(json.dumps(response_obj).encode())
+            logger.debug("Wrote response %s", response_obj)
+        except BaseException as e:
+            logger.error("Caught error", exc_info=e)
 
 
 class MyHTTPServer(HTTPServer):
