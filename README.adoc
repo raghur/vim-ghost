@@ -32,8 +32,8 @@ Plug 'raghur/vim-ghost', {'do': ':GhostInstall'}
 [source,vimscript]
 ----
 " Only enabled for Vim 8 (not for Neovim).
-Plug 'roxma/nvim-yarp', v:version == 800 && !has('nvim') ? {} : { 'on': [], 'for': [] }
-Plug 'roxma/vim-hug-neovim-rpc', v:version == 800 && !has('nvim') ? {} : { 'on': [], 'for': [] }
+Plug 'roxma/nvim-yarp', v:version >= 800 && !has('nvim') ? {} : { 'on': [], 'for': [] }
+Plug 'roxma/vim-hug-neovim-rpc', v:version >= 800 && !has('nvim') ? {} : { 'on': [], 'for': [] }
 ----
 
 == Auto switching to vim:
