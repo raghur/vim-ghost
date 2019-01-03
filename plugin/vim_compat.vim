@@ -10,3 +10,4 @@ endfunc
 
 com! -nargs=0 GhostStart call s:ghost.call('server_start')
 com! -nargs=0 GhostStop call s:ghost.call('server_stop')
+com! -nargs=0 GhostVersion call s:ghost.call('show_version')

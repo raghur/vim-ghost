@@ -190,6 +190,12 @@ class Ghost(object):
         self.echo("Ghost server stopped")
         self.server_started = False
 
+    @neovim.command('GhostVersion', range='', nargs='0', sync=True)
+    def show_version(self, args, range):
+        version_string = 'This is version FIXME'
+        logger.info(version_string)
+        self.echo(version_string)
+
     @neovim.function("GhostNotify")
     def ghost_notify(self, args):
         logger.info(args)

@@ -81,6 +81,8 @@ in the plugin folder to install required python dependencies.
 
 You can shutdown the server with :GhostStop
 
+For showing version information there is :GhostVersion
+
 
 ================================================================================
 Configuration                                               *GhostConfiguration*
