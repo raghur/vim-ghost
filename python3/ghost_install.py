@@ -21,7 +21,7 @@ def install():
         out = subprocess.check_output([py3,
                                        "-m", "pip", "install", "--user", "-r",
                                        reqFile], stderr=subprocess.STDOUT,
-                                      shell=True)
+                                      shell=False)
         for l in out.decode().split(os.linesep):
             print("ghost: %s" % l)
         print("ghost: dependencies installed successfully")
