@@ -236,6 +236,8 @@ class Ghost(object):
                 buffer_handler_map[websocket] = [bufnr, temp_file_handle]
                 self.nvim.command(delete_cmd)
                 logger.debug("Set up aucmd: %s", delete_cmd)
+                self.nvim.command("doauto User vim-ghost#connected")
+                logger.debug("Raised custom au event")
                 self._raise_window()
             change_cmd = ("au TextChanged,TextChangedI <buffer> call"
                           " GhostNotify('text_changed', %d)" % bufnr)

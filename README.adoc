@@ -16,6 +16,23 @@ Plug 'raghur/vim-ghost', {'do': ':GhostInstall'}
 . On any textarea, click the ghost icon - switch to neovim and edit!. Content is sync'ed real time. Works both ways - edits in the browser window are pushed to neovim as well.
 . When done, just delete the buffer with `:bd!` - you'll be disconnected
 
+== Configuring filetype
+Whenever a buffer is connected, a `User` event `vim-ghost#connected` is raised. Here's a quick sample of 
+setting filetype to `markdown` if the textarea was on github or reddit
+
+```
+function! s:SetupGhostBuffer()
+    if match(expand("%:a"), '\v/ghost-(github|reddit)\.com-')
+        set ft=markdown
+    endif
+endfunction
+
+augroup vim-ghost
+    au!
+    au User vim-ghost#connected call s:SetupGhostBuffer()
+augroup END
+```
+
 == Requirements
 
 * Recent neovim/vim
