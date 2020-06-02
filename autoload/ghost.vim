@@ -7,7 +7,7 @@ function! ghost#install()
     endif
 endfunction
 
-function! s:initGhost()
+function! s:initGhost(...)
     " init ghost - capture window id to raise if necessary (*nix only)
     " Then if autostart is enabled, then start
     call s:SetWindowId()
