@@ -7,6 +7,7 @@ import logging
 import json
 import os
 import sys
+import platform
 from SimpleWebSocketServer import SimpleWebSocketServer, WebSocket
 try:
     import neovim
@@ -155,7 +156,8 @@ class Ghost(object):
         else:
             self.nvim.vars["ghost_cmd"] = self.cmd
 
-        self.darwin_app = self.nvim.vars.get("ghost_darwin_app")
+        if "ghost_darwin_app" in self.nvim.vars:
+            self.darwin_app = self.nvim.vars.get("ghost_darwin_app")
 
         self.httpserver = MyHTTPServer(self, ('127.0.0.1', self.port),
                                        WebRequestHandler)
@@ -249,11 +251,11 @@ class Ghost(object):
 
     def _raise_window(self):
         try:
-            if self.linux_window_id:
+            if platform.system() == "Linux" and self.linux_window_id:
                 subprocess.call(["xdotool", "windowactivate",
                                  self.linux_window_id])
                 logger.debug("activated window: %s", self.linux_window_id)
-            elif self.winapp:
+            elif platform.system() == "Windows" and self.winapp:
                 logger.debug("WINDOWS: trying to raise window")
                 # dragons - this is the only thing that works.
                 try:
@@ -261,7 +263,7 @@ class Ghost(object):
                     self.winapp.windows()[0].ShowInTaskbar()
                 except Exception as e:
                     logger.warning("Error during _raise_window, %s", e)
-            elif self.darwin_app:
+            elif platform.system() == "Darwin" and self.darwin_app:
                 logger.debug("Darwin: trying to raise window")
                 subprocess.call(["osascript", "-e",
                                  'tell application "' + self.darwin_app +
