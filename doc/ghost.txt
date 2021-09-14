@@ -132,7 +132,7 @@ You can check by running this command from inside vim:
 <
 Examples: 'Terminal', 'iTerm2', 'VimR', 'MacVim', 'kitty'
 >
-    let g:ghost_cmd = 'Terminal'
+    let g:ghost_darwin_app = 'Terminal'
 <
 Default: ''
 
