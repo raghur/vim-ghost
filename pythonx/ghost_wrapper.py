@@ -9,5 +9,11 @@ def server_start(*args):
 def server_stop(*args):
     return _obj.server_stop(args, '')
 
+def ghost_toggle_sync(*args):
+    return _obj.ghost_toggle_sync(args, '')
+
+def ghost_sync(*args):
+    return _obj.ghost_sync(args, '')
+
 def ghost_notify(*args):
     return _obj.ghost_notify(args)
