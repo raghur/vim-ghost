@@ -150,6 +150,18 @@ Syntax Highlighting
     autocmd BufNewFile,BufRead *stackoverflow.com* set filetype=markdown
     augroup END
 
+--------------------------------------------------------------------------------
+                                                                *g:ghost_enable_sync*
+Enable real-time syncing of the browser's textarea.
+
+  By default, anything you type in vim appears immediately in the browser's textarea.
+  If disabled, manual syncing of the textarea is done with the :GhostSync command.
+  Syncing may be disabled / enabled on the fly using the :GhostToggleSync command.
+>
+    let g:ghost_enable_sync = 1
+<
+Default: 1
+
 ================================================================================
 Contributing                                                 *GhostContributing*
 

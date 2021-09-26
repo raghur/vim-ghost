@@ -121,6 +121,7 @@ class Ghost(object):
         self.winapp = None
         self.darwin_app = None
         self.linux_window_id = None
+        self.syncghost = True
         self.cmd = 'ed'
 
     def echo(self, message, *args):
@@ -150,6 +151,9 @@ class Ghost(object):
             self.port = self.nvim.vars["ghost_port"]
         else:
             self.nvim.vars["ghost_port"] = self.port
+
+        if "ghost_enable_sync" in self.nvim.vars:
+            self.syncghost = self.nvim.vars["ghost_enable_sync"] != 0
 
         if "ghost_cmd" in self.nvim.vars:
             self.cmd = self.nvim.vars["ghost_cmd"]
@@ -192,6 +196,23 @@ class Ghost(object):
         self.echo("Ghost server stopped")
         self.server_started = False
 
+    @neovim.command('GhostToggleSync', range='', nargs='0', sync=True)
+    def ghost_toggle_sync(self, args, range):
+        self.syncghost = not self.syncghost
+        self.echo("Ghost sync: {}".format("ON" if self.syncghost else "OFF"))
+        if self.syncghost:
+            self.ghost_sync(args, range)
+
+    @neovim.command('GhostSync', range='', nargs='0', sync=True)
+    def ghost_sync(self, args, range):
+        bufnr = self.nvim.current.buffer.number
+        wsclient, req = buffer_handler_map[bufnr]
+        logger.info("sending message to client ")
+        text = "\n".join(self.nvim.buffers[bufnr][:])
+        req["text"] = text
+        # self.nvim.command("echo '%s'" % text)
+        wsclient.sendMessage(json.dumps(req))
+
     @neovim.function("GhostNotify")
     def ghost_notify(self, args):
         logger.info(args)
@@ -200,7 +221,7 @@ class Ghost(object):
             return
         wsclient, req = buffer_handler_map[bufnr]
         logger.debug('event recd: %s, buffer: %d', event, bufnr)
-        if event == "text_changed":
+        if event == "text_changed" and self.syncghost:
             logger.info("sending message to client ")
             text = "\n".join(self.nvim.buffers[bufnr][:])
             req["text"] = text
