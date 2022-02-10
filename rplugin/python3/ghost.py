@@ -206,12 +206,7 @@ class Ghost(object):
     @neovim.command('GhostSync', range='', nargs='0', sync=True)
     def ghost_sync(self, args, range):
         bufnr = self.nvim.current.buffer.number
-        wsclient, req = buffer_handler_map[bufnr]
-        logger.info("sending message to client ")
-        text = "\n".join(self.nvim.buffers[bufnr][:])
-        req["text"] = text
-        # self.nvim.command("echo '%s'" % text)
-        wsclient.sendMessage(json.dumps(req))
+        self._send_buffer_state(bufnr)
 
     @neovim.function("GhostNotify")
     def ghost_notify(self, args):
@@ -219,19 +214,43 @@ class Ghost(object):
         event, bufnr = args
         if bufnr not in buffer_handler_map:
             return
-        wsclient, req = buffer_handler_map[bufnr]
         logger.debug('event recd: %s, buffer: %d', event, bufnr)
         if event == "text_changed" and self.syncghost:
-            logger.info("sending message to client ")
-            text = "\n".join(self.nvim.buffers[bufnr][:])
-            req["text"] = text
-            # self.nvim.command("echo '%s'" % text)
-            wsclient.sendMessage(json.dumps(req))
+            self._send_buffer_state(bufnr)
         elif event == "closed":
             logger.info(("Calling _handleOnWebSocketClose"
                          " in response to buffer"
                          " %d closure in nvim", bufnr))
+            wsclient = buffer_handler_map[bufnr][0]
             self._handle_web_socket_close(wsclient)
+
+    def _send_buffer_state(self, bufnr):
+        if bufnr not in buffer_handler_map:
+            return
+        wsclient, req = buffer_handler_map[bufnr]
+        logger.info("sending message to client ")
+
+        buflines = self.nvim.buffers[bufnr]
+        text = "\n".join(buflines)
+        req["text"] = text
+
+        selections = self._get_selections(buflines)
+        req["selections"] = selections
+
+        # self.nvim.out_write(f"{text}\n{selections}")
+        wsclient.sendMessage(json.dumps(req))
+
+    def _get_selections(self, buflines):
+        off1 = self._loc_to_offset(".", buflines)
+        off2 = self._loc_to_offset("v", buflines)
+        start, end = min(off1, off2), max(off1, off2)
+        return [{"start": start, "end": end + (start != end)}]
+
+    def _loc_to_offset(self, loc_expr, buflines):
+        line, col = self.nvim.funcs.getpos(loc_expr)[1:3]
+        line_offset = sum(len(buflines[ln]) for ln in range(min(line-1, len(buflines))))
+        col_offset = col - 1
+        return line_offset + col_offset
 
     def _handle_on_message(self, req, websocket):
         try:
@@ -262,7 +281,7 @@ class Ghost(object):
                 self.nvim.command("doauto User vim-ghost#connected")
                 logger.debug("Raised custom au event")
                 self._raise_window()
-            change_cmd = ("au TextChanged,TextChangedI <buffer> call"
+            change_cmd = ("au TextChanged,TextChangedI,CursorMoved,CursorMovedI <buffer> call"
                           " GhostNotify('text_changed', %d)" % bufnr)
             self.nvim.command(change_cmd)
             logger.debug("Set up aucmd: %s", change_cmd)
